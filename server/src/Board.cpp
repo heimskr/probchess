@@ -8,6 +8,10 @@ std::shared_ptr<Piece> Board::at(int row, int column) const {
 	return pieces[row][column];
 }
 
+std::shared_ptr<Piece> Board::at(Square square) const {
+	return at(square.row, square.column);
+}
+
 void Board::placePieces() {
 	for (int row = 0; row < 8; ++row)
 		for (int column = 0; column < 8; ++column)

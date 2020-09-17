@@ -15,6 +15,7 @@ class Board {
 		Board() {}
 
 		std::shared_ptr<Piece> at(int row, int column) const;
+		std::shared_ptr<Piece> at(Square) const;
 		void placePieces();
 		operator std::string() const;
 
