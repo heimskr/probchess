@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <signal.h>
 
 #include "websocketpp/server.hpp"
 #include "websocketpp/config/asio_no_tls.hpp"
@@ -12,7 +13,7 @@
 using asio_server = websocketpp::server<websocketpp::config::asio>;
 
 void echo_handler(websocketpp::connection_hdl, asio_server::message_ptr);
-void server_atexit();
+void signal_handler(int signum);
 
 asio_server *server;
 
@@ -29,26 +30,22 @@ int main(int argc, char **argv) {
 		std::cerr << "Not a valid port: " << argv[1] << "\n";
 	}
 
-	std::atexit(server_atexit);
+	signal(SIGINT, signal_handler);
 
-	Board board;
-	board.placePieces();
-
-	std::cout << std::string(board) << "\n";
-	
-
-	// server = new asio_server;
-	// server->set_error_channels(websocketpp::log::elevel::all);
-	// server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
-	// server->init_asio();
-	// server->set_message_handler(std::bind(&echo_handler, std::placeholders::_1, std::placeholders::_2));
-	// server->listen(port);
-	// server->start_accept();
-	// server->run();
+	server = new asio_server;
+	server->set_error_channels(websocketpp::log::elevel::all);
+	server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
+	server->init_asio();
+	server->set_message_handler(std::bind(&echo_handler, std::placeholders::_1, std::placeholders::_2));
+	server->listen(port);
+	server->start_accept();
+	server->run();
 }
 
-void server_atexit() {
-	std::cout << "Bye.\n";
+void signal_handler(int signum) {
+	server->stop();
+	server->stop_listening();
+	delete server;
 }
 
 void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_ptr) {
