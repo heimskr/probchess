@@ -4,7 +4,7 @@
 #include "Board.h"
 #include "piece/all.h"
 
-std::shared_ptr<Piece> Board::at(int row, int column) {
+std::shared_ptr<Piece> Board::at(int row, int column) const {
 	return pieces[row][column];
 }
 
@@ -30,7 +30,7 @@ void Board::placePieces() {
 	}
 }
 
-Board::operator std::string() {
+Board::operator std::string() const {
 	static std::function<const char * (int, int)> bg = [](int row, int column) {
 		return row % 2 == column % 2? "\e[47m" : "\e[100m";
 	};

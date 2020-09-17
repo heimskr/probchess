@@ -6,15 +6,17 @@
 
 #include "piece/Piece.h"
 
+// Assumption: black starts at the top.
+
 class Board {
 	public:
 		std::array<std::array<std::shared_ptr<Piece>, 8>, 8> pieces;
 
 		Board() {}
 
-		std::shared_ptr<Piece> at(int row, int column);
+		std::shared_ptr<Piece> at(int row, int column) const;
 		void placePieces();
-		operator std::string();
+		operator std::string() const;
 
 		template <typename P>
 		std::shared_ptr<Piece> set(Color color, int row_, int column_) {

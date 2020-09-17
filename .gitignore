@@ -1,4 +1,6 @@
 .DS_Store
+.dep
+chess
 
 # Prerequisites
 *.d
