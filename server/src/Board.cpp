@@ -17,21 +17,35 @@ void Board::placePieces() {
 		for (int column = 0; column < 8; ++column)
 			pieces[row][column].reset();
 	
-	for (const std::pair<Color, int> &pair: std::initializer_list<std::pair<Color, int>> {{Color::Black, 0}, {Color::White, 7}}) {
-		set<Rook>(pair.first,   pair.second, 0);
-		set<Knight>(pair.first, pair.second, 1);
-		set<Bishop>(pair.first, pair.second, 2);
-		set<Queen>(pair.first,  pair.second, 3);
-		set<King>(pair.first,   pair.second, 4);
-		set<Bishop>(pair.first, pair.second, 5);
-		set<Knight>(pair.first, pair.second, 6);
-		set<Rook>(pair.first,   pair.second, 7);
-	}
+	blackPieces.push_back(set<Rook>(Color::Black,   0, 0));
+	blackPieces.push_back(set<Knight>(Color::Black, 0, 1));
+	blackPieces.push_back(set<Bishop>(Color::Black, 0, 2));
+	blackPieces.push_back(set<Queen>(Color::Black,  0, 3));
+	blackPieces.push_back(set<King>(Color::Black,   0, 4));
+	blackPieces.push_back(set<Bishop>(Color::Black, 0, 5));
+	blackPieces.push_back(set<Knight>(Color::Black, 0, 6));
+	blackPieces.push_back(set<Rook>(Color::Black,   0, 7));
+
+	whitePieces.push_back(set<Rook>(Color::White,   7, 0));
+	whitePieces.push_back(set<Knight>(Color::White, 7, 1));
+	whitePieces.push_back(set<Bishop>(Color::White, 7, 2));
+	whitePieces.push_back(set<Queen>(Color::White,  7, 3));
+	whitePieces.push_back(set<King>(Color::White,   7, 4));
+	whitePieces.push_back(set<Bishop>(Color::White, 7, 5));
+	whitePieces.push_back(set<Knight>(Color::White, 7, 6));
+	whitePieces.push_back(set<Rook>(Color::White,   7, 7));
 
 	for (int column = 0; column < 8; ++column) {
-		set<Pawn>(Color::Black, 1, column);
-		set<Pawn>(Color::White, 6, column);
+		blackPieces.push_back(set<Pawn>(Color::Black, 1, column));
+		whitePieces.push_back(set<Pawn>(Color::White, 6, column));
 	}
+}
+
+void Board::erase(std::shared_ptr<Piece> piece) {
+	if (piece->color == Color::Black)
+		blackPieces.remove(piece);
+	else
+		whitePieces.remove(piece);
 }
 
 Board::operator std::string() const {
