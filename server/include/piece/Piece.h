@@ -11,7 +11,7 @@ class Board;
 
 class Piece {
 	protected:
-		void filter(std::list<Square> &);
+		std::list<Square> & filter(std::list<Square> &);
 
 	public:
 		Board *parent;
