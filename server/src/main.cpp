@@ -1,23 +1,24 @@
 #include <iostream>
 #include <cstdlib>
 #include <signal.h>
-
-#include "websocketpp/server.hpp"
-#include "websocketpp/config/asio_no_tls.hpp"
+#include <time.h>
 
 #include "Board.h"
-#include "Util.h"
 #include "Square.h"
+#include "Util.h"
+#include "WebSocket.h"
+#include "main.h"
 #include "piece/all.h"
-
-using asio_server = websocketpp::server<websocketpp::config::asio>;
 
 void echo_handler(websocketpp::connection_hdl, asio_server::message_ptr);
 void signal_handler(int signum);
 
 asio_server *server;
+std::unordered_map<std::string, std::shared_ptr<Match>> matches;
 
 int main(int argc, char **argv) {
+	srand(time(NULL));
+
 	if (argc < 2) {
 		std::cerr << "Usage: chess <port>\n";
 		exit(1);
@@ -51,7 +52,7 @@ void signal_handler(int signum) {
 void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_ptr) {
 	const std::string &msg = msg_ptr->get_payload();
 	if (msg.empty() || msg[0] != ':') {
-		server->send(hdl, "Invalid message.", msg_ptr->get_opcode());
+		send(hdl, "Invalid message.");
 		return;
 	}
 }

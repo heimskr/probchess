@@ -3,27 +3,30 @@
 
 #include <optional>
 
-#include "websocketpp/server.hpp"
-#include "websocketpp/connection.hpp"
+#include "WebSocket.h"
 #include "Board.h"
 
 class Match {
 	public:
-		websocketpp::connection_hdl host;
-		std::optional<websocketpp::connection_hdl> guest;
+		const std::string id;
+		Connection host;
+		std::optional<Connection> guest;
 		Color currentTurn = Color::White;
 		Color hostColor;
 		Board board;
 		std::optional<Color> winner;
+		int column = -1;
 
-		Match(websocketpp::connection_hdl host_, Color host_color);
+		Match(const std::string &id_, Connection host_, Color host_color);
 
 		bool active() const;
+		void roll();
+		void end(Connection *winner);
 
-		void makeMove(websocketpp::connection_hdl, Square from, Square to);
-		websocketpp::connection_hdl getWhite() const;
-		websocketpp::connection_hdl getBlack() const;
-		websocketpp::connection_hdl get(Color) const;
+		void makeMove(Connection, Square from, Square to);
+		Connection getWhite() const;
+		Connection getBlack() const;
+		Connection get(Color) const;
 };
 
 #endif

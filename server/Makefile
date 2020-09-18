@@ -17,7 +17,7 @@ test: $(OUTPUT)
 	$(COMPILER) $(CFLAGS) -std=c++17 -c $< -o $@
 
 clean:
-	rm -f src/*.o $(OUTPUT)
+	rm -f src/*.o src/**/*.o $(OUTPUT)
 
 DEPFILE  = .dep
 DEPTOKEN = "\# MAKEDEPENDS"

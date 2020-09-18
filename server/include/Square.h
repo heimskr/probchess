@@ -12,6 +12,10 @@ class Square {
 		Color getColor() const {
 			return row % 2 == column % 2? Color::White : Color::Black;
 		}
+
+		bool operator==(const Square &other) const {
+			return row == other.row && column == other.column;
+		}
 };
 
 #endif

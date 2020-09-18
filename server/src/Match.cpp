@@ -1,13 +1,38 @@
+#include <cstdlib>
+
 #include "Match.h"
 #include "ChessError.h"
 #include "piece/King.h"
 
-Match::Match(websocketpp::connection_hdl host_, Color host_color): host(host_), hostColor(host_color) {
+Match::Match(const std::string &id_, websocketpp::connection_hdl host_, Color host_color):
+id(id_), host(host_), hostColor(host_color) {
 	board.placePieces();
 }
 
 bool Match::active() const {
 	return guest.has_value();
+}
+
+void Match::roll() {
+	column = ((rand() % 6) + (rand() % 6)) % 8;
+	const std::string message = ":Column " + std::to_string(column);
+	send(host, message);
+	send(*guest, message);
+}
+
+void Match::end(Connection *winner) {
+	if (winner == &host) {
+		send(host, ":Win");
+		if (guest.has_value())
+			send(*guest, ":Lose");
+	} else if (guest.has_value() && winner == &*guest) {
+		send(host, ":Lose");
+		send(*guest, ":Win");
+	} else {
+		send(host, ":End");
+		if (guest.has_value())
+			send(*guest, ":End");
+	}
 }
 
 void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square to) {
@@ -25,7 +50,8 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	if ((address == host.lock().get() && !isHostTurn) || (address == guest->lock().get() && isHostTurn))
 		throw ChessError("Invalid turn");
 
-	if (!board.at(from))
+	std::shared_ptr<Piece> from_piece = board.at(from);
+	if (!from_piece)
 		throw ChessError("No source piece");
 
 	std::shared_ptr<Piece> to_piece = board.at(to);
@@ -33,9 +59,22 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 		if (to_piece->color == currentTurn)
 			throw ChessError("Can't capture own piece");
 		board.erase(to_piece);
-		if (dynamic_cast<King *>(to_piece.get()))
+		if (dynamic_cast<King *>(to_piece.get())) {
 			winner = currentTurn;
+			end(hostColor == currentTurn? &host : &*guest);
+		}
 	}
+
+	bool can_move = false;
+	for (const Square &possibility: from_piece->canMoveTo()) {
+		if (possibility == to) {
+			can_move = true;
+			break;
+		}
+	}
+
+	if (!can_move)
+		throw ChessError("Invalid move");
 }
 
 websocketpp::connection_hdl Match::getWhite() const {
