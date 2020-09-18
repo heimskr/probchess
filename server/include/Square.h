@@ -1,6 +1,8 @@
 #ifndef CHESS_SQUARE_H_
 #define CHESS_SQUARE_H_
 
+#include <utility>
+
 #include "Color.h"
 
 class Square {
@@ -24,6 +26,16 @@ class Square {
 		Square operator<<=(int column_shift) { column -= column_shift; return *this; }
 		Square operator>>=(int column_shift) { column += column_shift; return *this; }
 		operator bool() const { return 0 <= row && row < 8 && 0 <= column && column < 8; }
+
+		Square operator+(const std::pair<int, int> &offsets) const {
+			return Square(row + offsets.first, column + offsets.second);
+		}
+
+		Square operator+=(const std::pair<int, int> &offsets) {
+			row += offsets.first;
+			column += offsets.second;
+			return *this;
+		}
 };
 
 #endif
