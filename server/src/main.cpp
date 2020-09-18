@@ -33,14 +33,20 @@ int main(int argc, char **argv) {
 
 	signal(SIGINT, signal_handler);
 
-	server = new asio_server;
-	server->set_error_channels(websocketpp::log::elevel::all);
-	server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
-	server->init_asio();
-	server->set_message_handler(std::bind(&echo_handler, std::placeholders::_1, std::placeholders::_2));
-	server->listen(port);
-	server->start_accept();
-	server->run();
+	Board board;
+	board.placePieces();
+	board.erase(0, 4);
+	board.erase(4, 4);
+	std::cout << std::string(board);
+
+	// server = new asio_server;
+	// server->set_error_channels(websocketpp::log::elevel::all);
+	// server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
+	// server->init_asio();
+	// server->set_message_handler(std::bind(&echo_handler, std::placeholders::_1, std::placeholders::_2));
+	// server->listen(port);
+	// server->start_accept();
+	// server->run();
 }
 
 void signal_handler(int signum) {

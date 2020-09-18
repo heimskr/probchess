@@ -44,10 +44,17 @@ void Board::placePieces() {
 }
 
 void Board::erase(std::shared_ptr<Piece> piece) {
+	if (!piece)
+		return;
 	if (piece->color == Color::Black)
 		blackPieces.remove(piece);
 	else
 		whitePieces.remove(piece);
+	pieces[piece->square.row][piece->square.column].reset();
+}
+
+void Board::erase(int row, int column) {
+	erase(at(row, column));
 }
 
 Board::operator std::string() const {

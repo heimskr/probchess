@@ -19,6 +19,7 @@ class Board {
 		std::shared_ptr<Piece> at(Square) const;
 		void placePieces();
 		void erase(std::shared_ptr<Piece>);
+		void erase(int row, int column);
 		operator std::string() const;
 
 		template <typename P>
