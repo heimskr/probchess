@@ -1,5 +1,23 @@
 #include "piece/Knight.h"
 
 std::list<Square> Knight::canMoveTo() {
-	return {};
+	std::list<Square> out;
+
+	// . X . X .
+	// X . . . X
+	// . . x . .
+	// X . . . X
+	// . X . X .
+
+	out.push_back(square + std::make_pair(-2, -1));
+	out.push_back(square + std::make_pair(-2,  1));
+	out.push_back(square + std::make_pair(-1,  2));
+	out.push_back(square + std::make_pair( 1,  2));
+	out.push_back(square + std::make_pair( 2,  1));
+	out.push_back(square + std::make_pair( 2, -1));
+	out.push_back(square + std::make_pair( 1, -2));
+	out.push_back(square + std::make_pair(-1, -2));
+
+	filter(out);
+	return out;
 }
