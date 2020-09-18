@@ -2,6 +2,7 @@
 
 #include "Match.h"
 #include "ChessError.h"
+#include "main.h"
 #include "piece/King.h"
 
 Match::Match(const std::string &id_, websocketpp::connection_hdl host_, Color host_color):
@@ -18,6 +19,7 @@ void Match::roll() {
 	const std::string message = ":Column " + std::to_string(column);
 	send(host, message);
 	send(*guest, message);
+	matches.erase(id);
 }
 
 void Match::end(Connection *winner) {
@@ -54,17 +56,6 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	if (!from_piece)
 		throw ChessError("No source piece");
 
-	std::shared_ptr<Piece> to_piece = board.at(to);
-	if (to_piece) {
-		if (to_piece->color == currentTurn)
-			throw ChessError("Can't capture own piece");
-		board.erase(to_piece);
-		if (dynamic_cast<King *>(to_piece.get())) {
-			winner = currentTurn;
-			end(hostColor == currentTurn? &host : &*guest);
-		}
-	}
-
 	bool can_move = false;
 	for (const Square &possibility: from_piece->canMoveTo()) {
 		if (possibility == to) {
@@ -75,6 +66,21 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 
 	if (!can_move)
 		throw ChessError("Invalid move");
+
+	std::shared_ptr<Piece> to_piece = board.at(to);
+	if (to_piece) {
+		if (to_piece->color == currentTurn)
+			throw ChessError("Can't capture own piece");
+		if (dynamic_cast<King *>(to_piece.get())) {
+			winner = currentTurn;
+			end(hostColor == currentTurn? &host : &*guest);
+			return;
+		}
+
+		board.erase(to_piece);
+	}
+
+	board.move(from_piece, to);
 }
 
 websocketpp::connection_hdl Match::getWhite() const {

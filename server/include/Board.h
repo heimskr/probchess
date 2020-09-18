@@ -20,6 +20,8 @@ class Board {
 		void placePieces();
 		void erase(std::shared_ptr<Piece>);
 		void erase(int row, int column);
+		bool move(std::shared_ptr<Piece>, int new_row, int new_column);
+		bool move(std::shared_ptr<Piece>, Square);
 		operator std::string() const;
 
 		template <typename P>

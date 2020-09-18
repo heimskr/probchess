@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 	board.placePieces();
 	board.erase(0, 4);
 	board.erase(4, 4);
+	board.move(board.at(1, 1), 3, 2);
 	std::cout << std::string(board);
 
 	// server = new asio_server;

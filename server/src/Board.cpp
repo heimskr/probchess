@@ -57,6 +57,18 @@ void Board::erase(int row, int column) {
 	erase(at(row, column));
 }
 
+bool Board::move(std::shared_ptr<Piece> piece, int new_row, int new_column) {
+	if (!piece)
+		return false;
+	pieces[new_row][new_column] = piece;
+	pieces[piece->square.row][piece->square.column] = nullptr;
+	return true;
+}
+
+bool Board::move(std::shared_ptr<Piece> piece, Square square) {
+	return move(piece, square.row, square.column);
+}
+
 Board::operator std::string() const {
 	static std::function<const char * (int, int)> bg = [](int row, int column) {
 		return row % 2 == column % 2? "\e[47m" : "\e[100m";
