@@ -10,6 +10,9 @@
 class Board;
 
 class Piece {
+	protected:
+		void filter(std::list<Square> &);
+
 	public:
 		Board *parent;
 		Square square;

@@ -5,6 +5,8 @@
 #include "piece/all.h"
 
 std::shared_ptr<Piece> Board::at(int row, int column) const {
+	if (row < 0 || 7 < row || column < 0 || 7 < column)
+		return nullptr;
 	return pieces[row][column];
 }
 

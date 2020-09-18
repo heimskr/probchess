@@ -16,6 +16,22 @@ class Square {
 		bool operator==(const Square &other) const {
 			return row == other.row && column == other.column;
 		}
+
+		Square operator+(int row_shift) const {
+			return Square(row + row_shift, column);
+		}
+
+		Square operator-(int row_shift) const {
+			return Square(row - row_shift, column);
+		}
+
+		Square operator<<(int column_shift) const {
+			return Square(row, column - column_shift);
+		}
+
+		Square operator>>(int column_shift) const {
+			return Square(row, column + column_shift);
+		}
 };
 
 #endif
