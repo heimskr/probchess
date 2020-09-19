@@ -19,7 +19,6 @@ void Match::roll() {
 	const std::string message = ":Column " + std::to_string(column);
 	send(host, message);
 	send(*guest, message);
-	matches.erase(id);
 }
 
 void Match::end(Connection *winner) {
@@ -35,6 +34,8 @@ void Match::end(Connection *winner) {
 		if (guest.has_value())
 			send(*guest, ":End");
 	}
+	matchesByID.erase(id);
+	matchesByConnection.erase(host.lock().get());
 }
 
 void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square to) {
