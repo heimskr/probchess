@@ -1,4 +1,4 @@
-const pieceMap = {bishop: "♝", king: "♚", knight: "♞", pawn: "♟", queen: "♛", rook: "♜"};
+const pieceMap = {bishop: "♝", king: "♚", knight: "♞", pawn: "♟&#xFE0E;", queen: "♛", rook: "♜"};
 const abbreviations = {b: "bishop", k: "king", h: "knight", p: "pawn", q: "queen", r: "rook"};
 
 class Square {
@@ -86,7 +86,7 @@ class Chessboard {
 				td.attr({"data-row": row, "data-col": col});
 				const item = this.rows[row][col];
 				if (item)
-					td.addClass(item[1] + "-piece").text(pieceMap[item[0]]);
+					td.addClass(item[1] + "-piece").html(pieceMap[item[0]]);
 			}
 		}
 
@@ -106,7 +106,7 @@ class Chessboard {
 				const cell = $(`#cell${row}${col}`).removeClass(["black-piece", "white-piece"]).text("");
 				const piece = this.at(row, col);
 				if (piece)
-					cell.addClass(piece[1] + "-piece").text(pieceMap[piece[0]]);
+					cell.addClass(piece[1] + "-piece").html(pieceMap[piece[0]]);
 			}
 		}
 	}
