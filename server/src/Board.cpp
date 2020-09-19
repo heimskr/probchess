@@ -1,4 +1,5 @@
 #include <functional>
+#include <iostream>
 #include <sstream>
 
 #include "Board.h"
@@ -62,6 +63,8 @@ bool Board::move(std::shared_ptr<Piece> piece, int new_row, int new_column) {
 		return false;
 	pieces[new_row][new_column] = piece;
 	pieces[piece->square.row][piece->square.column] = nullptr;
+	piece->square.row = new_row;
+	piece->square.column = new_column;
 	return true;
 }
 
@@ -70,11 +73,11 @@ bool Board::move(std::shared_ptr<Piece> piece, Square square) {
 }
 
 std::string Board::toString(std::shared_ptr<Piece> show_moves) const {
-	std::list<Square> moves = show_moves? show_moves->canMoveTo() : std::list<Square>();
+	const std::list<Square> moves = show_moves? show_moves->canMoveTo() : std::list<Square>();
 
-	static std::function<const char * (int, int)> bg = [&](int row, int column) {
-		for (const Square &move: moves)
-			if (move.row == row && move.column == column)
+	std::function<const char * (int, int)> bg = [&](int row, int column) {
+		for (const Square &square: moves)
+			if (square.row == row && square.column == column)
 				return "\e[43m";
 		return row % 2 == column % 2? "\e[47m" : "\e[100m";
 	};

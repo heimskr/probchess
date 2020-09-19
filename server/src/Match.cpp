@@ -58,6 +58,9 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	if (from_piece->color != currentTurn)
 		throw ChessError("Not your piece");
 
+	if (from == to)
+		throw ChessError("Move must actually move a piece");
+
 	if (from.column != column)
 		throw ChessError("Incorrect column");
 

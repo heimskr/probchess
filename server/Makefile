@@ -3,6 +3,7 @@ DEBUGGER	?= lldb
 OUTPUT		:= chess
 SOURCES		:= $(shell find src/*.cpp src/**/*.cpp)
 OBJECTS		:= $(SOURCES:.cpp=.o)
+COREFLAGS	?= -g -O0 -Wall -Wextra
 CFLAGS		?= -Iinclude $(shell pkg-config --cflags boost openssl)
 LDFLAGS		?= $(shell pkg-config --libs boost openssl) -lpthread
 
@@ -15,7 +16,7 @@ test: $(OUTPUT)
 	./$(OUTPUT) 38555
 
 %.o: %.cpp
-	$(COMPILER) $(CFLAGS) -std=c++17 -c $< -o $@
+	$(COMPILER) $(COREFLAGS) $(CFLAGS) -std=c++17 -c $< -o $@
 
 clean:
 	rm -f src/*.o src/**/*.o $(OUTPUT)

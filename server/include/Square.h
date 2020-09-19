@@ -1,6 +1,7 @@
 #ifndef CHESS_SQUARE_H_
 #define CHESS_SQUARE_H_
 
+#include <ostream>
 #include <utility>
 
 #include "Color.h"
@@ -38,5 +39,7 @@ class Square {
 			return *this;
 		}
 };
+
+std::ostream & operator<<(std::ostream &, const Square &);
 
 #endif

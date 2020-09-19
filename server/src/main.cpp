@@ -13,7 +13,7 @@
 #include "piece/all.h"
 
 void echo_handler(websocketpp::connection_hdl, asio_server::message_ptr);
-void signal_handler(int signum);
+void signal_handler(int);
 
 asio_server *server;
 std::unordered_map<std::string, std::shared_ptr<Match>> matchesByID;
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 	server->run();
 }
 
-void signal_handler(int signum) {
+void signal_handler(int) {
 	std::cout << "Goodbye.\n";
 	server->stop();
 	server->stop_listening();
@@ -166,11 +166,15 @@ void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_
 			return;
 		}
 
-		std::shared_ptr<Match> match = matchesByConnection.at(hdl.lock().get());
-		if (!match) {
+		std::shared_ptr<Match> match;
+		try {
+			match = matchesByConnection.at(hdl.lock().get());
+		} catch (std::out_of_range &) {
 			send(hdl, ":Error Not in a match");
 			return;
 		}
+
+		std::cout << "Show[" << (words[1][0] - '0') << "][" << (words[1][1] - '0') << "]\n";
 
 		std::cout << match->board.toString(match->board.at(words[1][0] - '0', words[1][1] - '0')) << "\n";
 		return;

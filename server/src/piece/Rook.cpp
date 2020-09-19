@@ -3,14 +3,14 @@
 
 std::list<Square> Rook::canMoveTo() const {
 	std::list<Square> out;
-
 	Square next = square;
+
 	for (int i = 0; i < 7; ++i) { // up
 		next -= 1;
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
 
@@ -19,8 +19,8 @@ std::list<Square> Rook::canMoveTo() const {
 		next += 1;
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
 
@@ -29,8 +29,8 @@ std::list<Square> Rook::canMoveTo() const {
 		next <<= 1;
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
 
@@ -39,10 +39,11 @@ std::list<Square> Rook::canMoveTo() const {
 		next >>= 1;
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
+
 
 	filter(out);
 	return out;

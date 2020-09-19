@@ -9,8 +9,8 @@ std::list<Square> Bishop::canMoveTo() const {
 		next += {1, 1};
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
 
@@ -19,8 +19,8 @@ std::list<Square> Bishop::canMoveTo() const {
 		next += {1, -1};
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
 
@@ -29,8 +29,8 @@ std::list<Square> Bishop::canMoveTo() const {
 		next += {-1, -1};
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
 
@@ -39,8 +39,8 @@ std::list<Square> Bishop::canMoveTo() const {
 		next += {-1, 1};
 		if (!next)
 			break;
-		out.push_back(square);
-		if (parent->at(square))
+		out.push_back(next);
+		if (parent->at(next))
 			break;
 	}
 
