@@ -7,7 +7,7 @@ const abbreviations = {b: "bishop", k: "king", h: "knight", p: "pawn", q: "queen
 
 const state = {
 	connected: false,
-	usersTurn: false,
+	turn: null,
 	joined: false,
 	color: null,
 	matchID: null,
@@ -39,6 +39,7 @@ function connect() {
 		if (verb == "Joined") {
 			state.matchID = split[1];
 			state.color = split[2];
+			state.turn = "white";
 			state.board = new Chessboard();
 			state.board.placePieces();
 			renderBoard(state.board, $("main"));
@@ -65,11 +66,23 @@ function connect() {
 		if (verb == "Start") {
 			state.started = true;
 			$("#status").text("Connected.");
+			return;
 		}
 
 		if (verb == "Error") {
 			$("#error").addClass("visible").text(rest);
 			setTimeout(() => $("#error").removeClass("visible"), 2000);
+			return;
+		}
+
+		if (verb == "Turn") {
+			$("#status").text(rest == state.color? "It's your turn." : "It's the opponent's turn.");
+			state.turn = rest;
+			if (rest != state.color) {
+				state.selected = null;
+				$("td.square").removeClass("selected-piece");
+			}
+			return;
 		}
 	};
 	

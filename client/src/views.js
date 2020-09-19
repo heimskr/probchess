@@ -31,10 +31,12 @@ function renderBoard(board, j) {
 		return;
 	}
 
-	const table = board.renderTo(j);
-
-	table.find("td").on("click", ev => {
+	board.renderTo(j).find("td").on("click", ev => {
 		ev.preventDefault();
+		if (state.turn != state.color) {
+			return;
+		}
+
 		const cell = $(ev.target);
 		const row = parseInt(cell.attr("data-row")), col = parseInt(cell.attr("data-col"));
 		if (state.selected === null) {
