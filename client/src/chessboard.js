@@ -77,13 +77,14 @@ class Chessboard {
 			for (let col = 0; col < 8; ++col) {
 				let td = $("<td></td>").addClass("square").addClass((row % 2 == col % 2)? "white" : "black");
 				td.addClass("row" + row).addClass("col" + col).appendTo(tr).attr({id: `cell${row}${col}`});
+				td.attr({"data-row": row, "data-col": col});
 				const item = this.rows[row][col];
 				if (item)
 					td.addClass(item[1] + "-piece").text(pieceMap[item[0]]);
 			}
 		}
 
-		this.columnIndicator = $(`<div id="column"></div>`).appendTo(j);
+		return this.table;
 	}
 
 	invert() {
@@ -96,7 +97,7 @@ class Chessboard {
 		this.setPieces(str);
 		for (let row = 0; row < 8; ++row) {
 			for (let col = 0; col < 8; ++col) {
-				const cell = $(`#cell${row}${col}`).removeClass(["black-piece", "white-piece"]);
+				const cell = $(`#cell${row}${col}`).removeClass(["black-piece", "white-piece"]).text("");
 				const piece = this.at(row, col);
 				if (piece)
 					cell.addClass(piece[1] + "-piece").text(pieceMap[piece[0]]);

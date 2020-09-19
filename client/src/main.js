@@ -12,6 +12,8 @@ const state = {
 	color: null,
 	matchID: null,
 	board: null,
+	started: false,
+	selected: null,
 };
 
 function connect() {
@@ -40,6 +42,7 @@ function connect() {
 			state.board = new Chessboard();
 			state.board.placePieces();
 			renderBoard(state.board, $("main"));
+			$("#status").text("Waiting for another player to join.");
 			if (split[2] == "black")
 				state.board.invert();
 			return;
@@ -47,13 +50,26 @@ function connect() {
 
 		if (verb == "Column") {
 			$("#extraStyle").text(`.col${rest}.black { background: #444; } .col${rest}.white { background: #bbb; }`);
-			$("#column").text("Column: " + (1 + parseInt(rest)));
+			if (state.color == "black")
+				$("#column").text(`Column: ${1 + parseInt(rest)} (${8 - parseInt(rest)} from your perspective)`);
+			else
+				$("#column").text("Column: " + (1 + parseInt(rest)));
 			return;
 		}
 
 		if (verb == "Board") {
 			state.board.updatePieces(rest);
 			return;
+		}
+
+		if (verb == "Start") {
+			state.started = true;
+			$("#status").text("Connected.");
+		}
+
+		if (verb == "Error") {
+			$("#error").addClass("visible").text(rest);
+			setTimeout(() => $("#error").removeClass("visible"), 2000);
 		}
 	};
 	

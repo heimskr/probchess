@@ -137,6 +137,8 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		matchesByConnection.insert({hdl.lock().get(), match});
 		match->guest = hdl;
 		send(hdl, ":Joined " + words[1] + " " + (match->hostColor == Color::White? "black" : "white"));
+		send(match->host, ":Start");
+		send(hdl, ":Start");
 		match->roll();
 		return;
 	}

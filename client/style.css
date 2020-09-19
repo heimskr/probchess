@@ -9,19 +9,10 @@ main {
 	top: 0px;
 	left: 0px;
 	bottom: 0px;
-	right: 300px;
+	right: 0px;
 	background: green;
 	text-align: center;
 	padding: 20px;
-}
-
-aside {
-	position: fixed;
-	top: 0px;
-	right: 0px;
-	bottom: 0px;
-	width: 300px;
-	background: blue;
 }
 
 form {
@@ -43,11 +34,21 @@ label {
 	margin-left: 3px;
 }
 
-#column {
+#floaters {
 	position: fixed;
 	top: 10px;
 	left: 10px;
-	font-size: 18pt;
+	font-size: 14pt;
+	text-align: left;
+}
+
+#error:not(.visible) {
+	display: none;
+}
+
+#error:before {
+	content: "Error: ";
+	color: red;
 }
 
 table {
@@ -56,6 +57,7 @@ table {
 	position: relative;
 	margin: 0 auto;
 	top: calc(50vh - 239px);
+	background: gray;
 }
 
 /* l m a o */
@@ -70,7 +72,14 @@ td {
 	height: 50px;
 	border: 1px solid gray;
 	font-size: 30px;
+}
 
+table:not(.inverted) td.selected-piece {
+	transform: scale(0.8);
+}
+
+table.inverted td.selected-piece {
+	transform: scale(0.8) rotate(180deg);
 }
 
 td.white {

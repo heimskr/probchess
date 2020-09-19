@@ -33,4 +33,19 @@ function renderBoard(board, j) {
 
 	const table = board.renderTo(j);
 
+	table.find("td").on("click", ev => {
+		ev.preventDefault();
+		const cell = $(ev.target);
+		const row = parseInt(cell.attr("data-row")), col = parseInt(cell.attr("data-col"));
+		if (state.selected === null) {
+			state.selected = new Square(row, col);
+			cell.addClass("selected-piece");
+		} else {
+			if (row != state.selected.row || col != state.selected.column) {
+				move(`${state.selected.row}${state.selected.column}`, `${row}${col}`);
+			}
+			state.selected = null;
+			$("td.square").removeClass("selected-piece");
+		}
+	});
 }
