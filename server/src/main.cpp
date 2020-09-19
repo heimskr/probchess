@@ -12,7 +12,8 @@
 #include "main.h"
 #include "piece/all.h"
 
-void echo_handler(websocketpp::connection_hdl, asio_server::message_ptr);
+void echo_handler(Connection, asio_server::message_ptr);
+void close_handler(Connection);
 void signal_handler(int);
 
 asio_server *server;
@@ -45,6 +46,7 @@ int main(int argc, char **argv) {
 	server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
 	server->init_asio();
 	server->set_message_handler(std::bind(&echo_handler, std::placeholders::_1, std::placeholders::_2));
+	server->set_close_handler(std::bind(&close_handler, std::placeholders::_1));
 	server->listen(port);
 	server->start_accept();
 	server->run();
@@ -57,7 +59,20 @@ void signal_handler(int) {
 	delete server;
 }
 
-void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_ptr) {
+void close_handler(Connection hdl) {
+	std::shared_ptr<Match> match;
+	try {
+		match = matchesByConnection.at(hdl.lock().get());
+	} catch (std::out_of_range &) {
+		std::cerr << "Connection lost from client not in a match\n";
+		return;
+	}
+
+	std::cerr << "Ending match " << match->id << ": connection lost.\n";
+	match->end(nullptr);
+}
+
+void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	const std::string &msg = msg_ptr->get_payload();
 	if (msg.empty() || msg[0] != ':') {
 		send(hdl, ":Error Invalid message");

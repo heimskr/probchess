@@ -24,16 +24,20 @@ void Match::roll() {
 }
 
 void Match::end(Connection *winner) {
-	if (winner == &host) {
-		send(host, ":Win");
-		if (guest.has_value())
-			send(*guest, ":Lose");
-	} else if (guest.has_value() && winner == &*guest) {
-		send(host, ":Lose");
-		send(*guest, ":Win");
-	} else sendBoth(":End");
+	try {
+		if (winner == &host) {
+			send(host, ":Win");
+			if (guest.has_value())
+				send(*guest, ":Lose");
+		} else if (guest.has_value() && winner == &*guest) {
+			send(host, ":Lose");
+			send(*guest, ":Win");
+		} else sendBoth(":End");
+	} catch (websocketpp::exception &) {}
 	matchesByID.erase(id);
 	matchesByConnection.erase(host.lock().get());
+	if (guest.has_value())
+		matchesByConnection.erase(guest->lock().get());
 }
 
 void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square to) {
