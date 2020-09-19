@@ -1,9 +1,12 @@
 #include <cstdlib>
+#include <unistd.h>
 
 #include "Match.h"
 #include "ChessError.h"
 #include "main.h"
 #include "piece/King.h"
+#include "piece/Pawn.h"
+#include "piece/Queen.h"
 
 Match::Match(const std::string &id_, websocketpp::connection_hdl host_, Color host_color):
 id(id_), host(host_), hostColor(host_color) {
@@ -19,10 +22,7 @@ void Match::roll() {
 	if (8 < column)
 		column -= 8;
 	--column;
-	const std::string message = ":Column " + std::to_string(column);
-	send(host, message);
-	if (guest.has_value())
-		send(*guest, message);
+	sendBoth(":Column " + std::to_string(column));
 }
 
 void Match::end(Connection *winner) {
@@ -33,11 +33,7 @@ void Match::end(Connection *winner) {
 	} else if (guest.has_value() && winner == &*guest) {
 		send(host, ":Lose");
 		send(*guest, ":Win");
-	} else {
-		send(host, ":End");
-		if (guest.has_value())
-			send(*guest, ":End");
-	}
+	} else sendBoth(":End");
 	matchesByID.erase(id);
 	matchesByConnection.erase(host.lock().get());
 }
@@ -93,12 +89,49 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 
 	board.move(from_piece, to);
 	checkPawns();
-	currentTurn = currentTurn == Color::White? Color::Black : Color::White;
-	roll();
+	while (true) {
+		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
+		const std::string turn_str = currentTurn == Color::White? "white" : "black";
+		sendBoth(":Turn " + turn_str);
+		roll();
+		if (!canMove()) {
+			sendBoth(":Skip");
+		} else break;
+	}
 }
 
 void Match::checkPawns() {
+	for (int col = 0; col < 8; ++col) {
+		std::shared_ptr<Piece> piece = board.at(0, col);
+		if (piece && dynamic_cast<Pawn *>(piece.get()) && piece->color == Color::White) {
+			board.erase(piece);
+			board.whitePieces.push_back(board.set<Queen>(Color::White, 0, col));
+		}
+	}
 
+	for (int col = 0; col < 8; ++col) {
+		std::shared_ptr<Piece> piece = board.at(7, col);
+		if (piece && dynamic_cast<Pawn *>(piece.get()) && piece->color == Color::Black) {
+			board.erase(piece);
+			board.blackPieces.push_back(board.set<Queen>(Color::Black, 7, col));
+		}
+	}
+}
+
+bool Match::canMove() {
+	for (int row = 0; row < 8; ++row) {
+		std::shared_ptr<Piece> piece = board.at(row, column);
+		if (piece && piece->color == currentTurn && !piece->canMoveTo().empty())
+			return true;
+	}
+
+	return false;
+}
+
+void Match::sendBoth(const std::string &message) {
+	send(host, message);
+	if (guest.has_value())
+		send(*guest, message);
 }
 
 websocketpp::connection_hdl Match::getWhite() const {

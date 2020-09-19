@@ -25,6 +25,8 @@ class Match {
 
 		void makeMove(Connection, Square from, Square to);
 		void checkPawns();
+		bool canMove();
+		void sendBoth(const std::string &);
 		Connection getWhite() const;
 		Connection getBlack() const;
 		Connection get(Color) const;
