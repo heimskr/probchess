@@ -18,6 +18,5 @@ std::list<Square> Knight::canMoveTo() const {
 	out.push_back(square + std::make_pair( 1, -2));
 	out.push_back(square + std::make_pair(-1, -2));
 
-	filter(out);
-	return out;
+	return filter(out);
 }

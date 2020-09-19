@@ -16,6 +16,5 @@ std::list<Square> Pawn::canMoveTo() const {
 	if (parent->at(next))
 		out.push_back(next);
 
-	filter(out);
-	return out;
+	return filter(out);
 }

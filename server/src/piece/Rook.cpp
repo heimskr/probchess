@@ -45,6 +45,5 @@ std::list<Square> Rook::canMoveTo() const {
 	}
 
 
-	filter(out);
-	return out;
+	return filter(out);
 }

@@ -12,6 +12,5 @@ std::list<Square> King::canMoveTo() const {
 	out.push_back(square + std::make_pair( 0, -1));
 	out.push_back(square + std::make_pair(-1, -1));
 
-	filter(out);
-	return out;
+	return filter(out);
 }

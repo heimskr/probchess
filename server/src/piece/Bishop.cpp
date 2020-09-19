@@ -44,6 +44,5 @@ std::list<Square> Bishop::canMoveTo() const {
 			break;
 	}
 
-	filter(out);
-	return out;
+	return filter(out);
 }
