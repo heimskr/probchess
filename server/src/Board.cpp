@@ -69,8 +69,13 @@ bool Board::move(std::shared_ptr<Piece> piece, Square square) {
 	return move(piece, square.row, square.column);
 }
 
-Board::operator std::string() const {
-	static std::function<const char * (int, int)> bg = [](int row, int column) {
+std::string Board::toString(std::shared_ptr<Piece> show_moves) const {
+	std::list<Square> moves = show_moves? show_moves->canMoveTo() : std::list<Square>();
+
+	static std::function<const char * (int, int)> bg = [&](int row, int column) {
+		for (const Square &move: moves)
+			if (move.row == row && move.column == column)
+				return "\e[43m";
 		return row % 2 == column % 2? "\e[47m" : "\e[100m";
 	};
 
@@ -100,4 +105,8 @@ Board::operator std::string() const {
 	}
 
 	return out.str();
+}
+
+Board::operator std::string() const {
+	return toString(nullptr);
 }

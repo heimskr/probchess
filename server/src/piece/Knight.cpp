@@ -1,6 +1,6 @@
 #include "piece/Knight.h"
 
-std::list<Square> Knight::canMoveTo() {
+std::list<Square> Knight::canMoveTo() const {
 	std::list<Square> out;
 
 	// . X . X .

@@ -4,9 +4,7 @@
 #include "Match.h"
 #include "ChessError.h"
 #include "main.h"
-#include "piece/King.h"
-#include "piece/Pawn.h"
-#include "piece/Queen.h"
+#include "piece/all.h"
 
 Match::Match(const std::string &id_, websocketpp::connection_hdl host_, Color host_color):
 id(id_), host(host_), hostColor(host_color) {
@@ -89,6 +87,7 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 
 	board.move(from_piece, to);
 	checkPawns();
+	sendBoard();
 	while (true) {
 		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
 		const std::string turn_str = currentTurn == Color::White? "white" : "black";
@@ -132,6 +131,38 @@ void Match::sendBoth(const std::string &message) {
 	send(host, message);
 	if (guest.has_value())
 		send(*guest, message);
+}
+
+void Match::sendBoard() {
+	std::string encoded;
+	for (int row = 0; row < 8; ++row) {
+		for (int col = 0; col < 8; ++col) {
+			std::shared_ptr<Piece> piece = board.at(row, col);
+			if (!piece) {
+				encoded += "__";
+			} else {
+				if (dynamic_cast<Bishop *>(piece.get())) {
+					encoded += "b";
+				} else if (dynamic_cast<King *>(piece.get())) {
+					encoded += "k";
+				} else if (dynamic_cast<Knight *>(piece.get())) {
+					encoded += "h";
+				} else if (dynamic_cast<Pawn *>(piece.get())) {
+					encoded += "p";
+				} else if (dynamic_cast<Queen *>(piece.get())) {
+					encoded += "q";
+				} else if (dynamic_cast<Rook *>(piece.get())) {
+					encoded += "r";
+				} else {
+					throw std::runtime_error("Invalid piece at row " + std::to_string(row) + ", column " +
+						std::to_string(col));
+				}
+
+				encoded += piece->color == Color::White? "W" : "B";
+			}
+		}
+	}
+	sendBoth(":Board " + encoded);
 }
 
 websocketpp::connection_hdl Match::getWhite() const {

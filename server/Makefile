@@ -1,4 +1,5 @@
 COMPILER	?= clang++
+DEBUGGER	?= lldb
 OUTPUT		:= chess
 SOURCES		:= $(shell find src/*.cpp src/**/*.cpp)
 OBJECTS		:= $(SOURCES:.cpp=.o)
@@ -18,6 +19,9 @@ test: $(OUTPUT)
 
 clean:
 	rm -f src/*.o src/**/*.o $(OUTPUT)
+
+dbg: $(OUTPUT)
+	$(DEBUGGER) $(OUTPUT) -- 38555
 
 DEPFILE  = .dep
 DEPTOKEN = "\# MAKEDEPENDS"

@@ -160,5 +160,21 @@ void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_
 		return;
 	}
 
+	if (verb == "Show") {
+		if (words.size() != 2 || words[1].size() != 2 || words[1].find_first_not_of("01234567") != std::string::npos) {
+			send(hdl, ":Error Invalid message");
+			return;
+		}
+
+		std::shared_ptr<Match> match = matchesByConnection.at(hdl.lock().get());
+		if (!match) {
+			send(hdl, ":Error Not in a match");
+			return;
+		}
+
+		std::cout << match->board.toString(match->board.at(words[1][0] - '0', words[1][1] - '0')) << "\n";
+		return;
+	}
+
 	send(hdl, ":Error Unknown message type");
 }

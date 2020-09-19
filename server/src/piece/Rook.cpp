@@ -1,7 +1,7 @@
 #include "Board.h"
 #include "piece/Rook.h"
 
-std::list<Square> Rook::canMoveTo() {
+std::list<Square> Rook::canMoveTo() const {
 	std::list<Square> out;
 
 	Square next = square;

@@ -27,6 +27,7 @@ class Match {
 		void checkPawns();
 		bool canMove();
 		void sendBoth(const std::string &);
+		void sendBoard();
 		Connection getWhite() const;
 		Connection getBlack() const;
 		Connection get(Color) const;

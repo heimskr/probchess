@@ -1,7 +1,7 @@
 #include "Board.h"
 #include "piece/Bishop.h"
 
-std::list<Square> Bishop::canMoveTo() {
+std::list<Square> Bishop::canMoveTo() const {
 	std::list<Square> out;
 
 	Square next = square;

@@ -1,7 +1,7 @@
 #include "Board.h"
 #include "piece/Pawn.h"
 
-std::list<Square> Pawn::canMoveTo() {
+std::list<Square> Pawn::canMoveTo() const {
 	std::list<Square> out;
 	Square next = square + (color == Color::Black? 1 : -1);
 
