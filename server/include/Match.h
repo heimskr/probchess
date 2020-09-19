@@ -24,6 +24,7 @@ class Match {
 		void end(Connection *winner);
 
 		void makeMove(Connection, Square from, Square to);
+		void checkPawns();
 		Connection getWhite() const;
 		Connection getBlack() const;
 		Connection get(Color) const;

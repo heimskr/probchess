@@ -15,10 +15,14 @@ bool Match::active() const {
 }
 
 void Match::roll() {
-	column = ((rand() % 6) + (rand() % 6)) % 8;
+	column = ((rand() % 6 + 1) + (rand() % 6 + 1));
+	if (8 < column)
+		column -= 8;
+	--column;
 	const std::string message = ":Column " + std::to_string(column);
 	send(host, message);
-	send(*guest, message);
+	if (guest.has_value())
+		send(*guest, message);
 }
 
 void Match::end(Connection *winner) {
@@ -60,6 +64,9 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	if (from_piece->color != currentTurn)
 		throw ChessError("Not your piece");
 
+	if (from.column != column)
+		throw ChessError("Incorrect column");
+
 	bool can_move = false;
 	for (const Square &possibility: from_piece->canMoveTo()) {
 		if (possibility == to) {
@@ -85,8 +92,13 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	}
 
 	board.move(from_piece, to);
-	// Check for pawns to promote
+	checkPawns();
 	currentTurn = currentTurn == Color::White? Color::Black : Color::White;
+	roll();
+}
+
+void Match::checkPawns() {
+
 }
 
 websocketpp::connection_hdl Match::getWhite() const {

@@ -82,7 +82,7 @@ Board::operator std::string() const {
 
 	for (int row = 0; row < 8; ++row) {
 		for (int column = 0; column < 8; ++column)
-			out << bg(row, column) << "     \e[0m";
+			out << bg(row, column) << row << column << "   \e[0m";
 		out << "\n";
 		for (int column = 0; column < 8; ++column) {
 			std::shared_ptr<Piece> piece = at(row, column);

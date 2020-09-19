@@ -36,6 +36,10 @@ int main(int argc, char **argv) {
 
 	signal(SIGINT, signal_handler);
 
+	Board board;
+	board.placePieces();
+	std::cout << std::string(board);
+
 	server = new asio_server;
 	server->set_error_channels(websocketpp::log::elevel::all);
 	server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
@@ -110,9 +114,15 @@ void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_
 		}
 
 		std::shared_ptr<Match> match = matchesByID.at(words[1]);
+		if (match->guest.has_value()) {
+			send(hdl, ":Error Match is full");
+			return;
+		}
+
 		matchesByConnection.insert({hdl.lock().get(), match});
 		match->guest = hdl;
 		send(hdl, ":Joined " + words[1] + " " + (match->hostColor == Color::White? "black" : "white"));
+		match->roll();
 		return;
 	}
 
