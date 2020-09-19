@@ -16,6 +16,10 @@ class Square {
 
 class Chessboard {
 	constructor(str) {
+		this.setPieces(str);
+	}
+
+	setPieces(str) {
 		this.rows = [];
 		for (let i = 0; i < 8; ++i)
 			this.rows.push([]);
@@ -71,11 +75,31 @@ class Chessboard {
 		for (let row = 0; row < 8; ++row) {
 			let tr = $("<tr></tr>").appendTo(tbody);
 			for (let col = 0; col < 8; ++col) {
-				let td = $("<td></td>").addClass("square").addClass((row % 2 == col % 2)? "white" : "black").appendTo(tr);
+				let td = $("<td></td>").addClass("square").addClass((row % 2 == col % 2)? "white" : "black");
+				td.addClass("row" + row).addClass("col" + col).appendTo(tr).attr({id: `cell${row}${col}`});
 				const item = this.rows[row][col];
-				if (item) {
+				if (item)
 					td.addClass(item[1] + "-piece").text(pieceMap[item[0]]);
-				}
+			}
+		}
+
+		this.columnIndicator = $(`<div id="column"></div>`).appendTo(j);
+	}
+
+	invert() {
+		if (!this.table)
+			return;
+		this.table.addClass("inverted");
+	}
+
+	updatePieces(str) {
+		this.setPieces(str);
+		for (let row = 0; row < 8; ++row) {
+			for (let col = 0; col < 8; ++col) {
+				const cell = $(`#cell${row}${col}`).removeClass(["black-piece", "white-piece"]);
+				const piece = this.at(row, col);
+				if (piece)
+					cell.addClass(piece[1] + "-piece").text(pieceMap[piece[0]]);
 			}
 		}
 	}

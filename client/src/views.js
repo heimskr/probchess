@@ -24,3 +24,13 @@ function renderJoin(j) {
 			ws.send(":Join " + matchID.val());
 	});
 }
+
+function renderBoard(board, j) {
+	if (!board) {
+		alert("Error: unable to render board");
+		return;
+	}
+
+	const table = board.renderTo(j);
+
+}

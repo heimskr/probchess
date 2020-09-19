@@ -43,12 +43,24 @@ label {
 	margin-left: 3px;
 }
 
+#column {
+	position: fixed;
+	top: 10px;
+	left: 10px;
+	font-size: 18pt;
+}
+
 table {
 	border-spacing: 0;
 	border: 2px solid gray;
 	position: relative;
 	margin: 0 auto;
 	top: calc(50vh - 239px);
+}
+
+/* l m a o */
+table.inverted, table.inverted td {
+	transform: rotate(180deg);
 }
 
 td {

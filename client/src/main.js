@@ -9,6 +9,9 @@ const state = {
 	connected: false,
 	usersTurn: false,
 	joined: false,
+	color: null,
+	matchID: null,
+	board: null,
 };
 
 function connect() {
@@ -22,6 +25,36 @@ function connect() {
 
 	ws.onmessage = ev => {
 		console.info(ev.data);
+		if (ev.data.length < 2 || ev.data[0] != ":") {
+			console.error("Invalid message:", ev.data);
+			return;
+		}
+
+		const split = ev.data.split(" ");
+		const verb = split[0].substr(1);
+		const rest = split.slice(1).join(" ");
+
+		if (verb == "Joined") {
+			state.matchID = split[1];
+			state.color = split[2];
+			state.board = new Chessboard();
+			state.board.placePieces();
+			renderBoard(state.board, $("main"));
+			if (split[2] == "black")
+				state.board.invert();
+			return;
+		}
+
+		if (verb == "Column") {
+			$("#extraStyle").text(`.col${rest}.black { background: #444; } .col${rest}.white { background: #bbb; }`);
+			$("#column").text("Column: " + (1 + parseInt(rest)));
+			return;
+		}
+
+		if (verb == "Board") {
+			state.board.updatePieces(rest);
+			return;
+		}
 	};
 	
 	ws.onclose = ev => {
