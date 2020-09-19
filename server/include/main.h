@@ -12,4 +12,11 @@ class Match;
 extern std::unordered_map<std::string, std::shared_ptr<Match>> matchesByID;
 extern std::unordered_map<void *, std::shared_ptr<Match>> matchesByConnection;
 
+void echo_handler(Connection, asio_server::message_ptr);
+void close_handler(Connection);
+void signal_handler(int);
+
+void createMatch(Connection, const std::string &id, Color);
+void joinMatch(Connection, const std::string &id);
+
 #endif

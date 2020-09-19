@@ -2,9 +2,6 @@ const WS_HOST = "localhost";
 
 let ws;
 
-const pieceMap = {bishop: "♝", king: "♚", knight: "♞", pawn: "♟", queen: "♛", rook: "♜"};
-const abbreviations = {b: "bishop", k: "king", h: "knight", p: "pawn", q: "queen", r: "rook"};
-
 const state = {
 	connected: false,
 	turn: null,
@@ -22,7 +19,6 @@ function connect() {
 	ws = new WebSocket(`ws://${WS_HOST}:38555`);
 
 	ws.onopen = ev => {
-		console.log("Opened socket.");
 		state.connected = true;
 		renderJoin($("main"));
 	};

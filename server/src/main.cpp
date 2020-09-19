@@ -12,10 +12,6 @@
 #include "main.h"
 #include "piece/all.h"
 
-void echo_handler(Connection, asio_server::message_ptr);
-void close_handler(Connection);
-void signal_handler(int);
-
 asio_server *server;
 std::unordered_map<std::string, std::shared_ptr<Match>> matchesByID;
 std::unordered_map<void *, std::shared_ptr<Match>> matchesByConnection;
@@ -84,27 +80,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 			return;
 		}
 
-		if (words[1].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
-		    != std::string::npos) {
-			send(hdl, ":Error Invalid match ID");
-			return;
-		}
-
-		if (matchesByConnection.count(hdl.lock().get()) > 0) {
-			send(hdl, ":Error Already in a match");
-			return;
-		}
-
-		if (matchesByID.count(words[1]) > 0) {
-			send(hdl, ":Error A match with that ID already exists");
-			return;
-		}
-
-		Color color = words.size() == 3 && words[2] == "black"? Color::Black : Color::White;
-		std::shared_ptr<Match> match = std::make_shared<Match>(words[1], hdl, color);
-		matchesByID.insert({words[1], match});
-		matchesByConnection.insert({hdl.lock().get(), match});
-		send(hdl, ":Joined " + words[1] + " " + (color == Color::White? "white" : "black"));
+		createMatch(hdl, words[1], words.size() == 3 && words[2] == "black"? Color::Black : Color::White);
 		return;
 	}
 
@@ -114,28 +90,20 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 			return;
 		}
 
-		if (matchesByConnection.count(hdl.lock().get()) > 0) {
-			send(hdl, ":Error Already in a match");
+		joinMatch(hdl, words[1]);
+		return;
+	}
+
+	if (verb == "CreateOrJoin") {
+		if (words.size() != 2 && words.size() != 3) {
+			send(hdl, ":Error Invalid message");
 			return;
 		}
 
-		if (matchesByID.count(words[1]) == 0) {
-			send(hdl, ":Error No match with that ID exists");
-			return;
-		}
-
-		std::shared_ptr<Match> match = matchesByID.at(words[1]);
-		if (match->guest.has_value()) {
-			send(hdl, ":Error Match is full");
-			return;
-		}
-
-		matchesByConnection.insert({hdl.lock().get(), match});
-		match->guest = hdl;
-		send(hdl, ":Joined " + words[1] + " " + (match->hostColor == Color::White? "black" : "white"));
-		send(match->host, ":Start");
-		send(hdl, ":Start");
-		match->roll();
+		if (matchesByID.count(words[1]) > 0)
+			joinMatch(hdl, words[1]);
+		else
+			createMatch(hdl, words[1], words.size() == 3 && words[2] == "black"? Color::Black : Color::White);
 		return;
 	}
 
@@ -192,4 +160,53 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	}
 
 	send(hdl, ":Error Unknown message type");
+}
+
+void createMatch(Connection hdl, const std::string &id, Color color) {
+	if (id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos) {
+		send(hdl, ":Error Invalid match ID");
+		return;
+	}
+
+	if (matchesByConnection.count(hdl.lock().get()) > 0) {
+		send(hdl, ":Error Already in a match");
+		return;
+	}
+
+	if (matchesByID.count(id) > 0) {
+		send(hdl, ":Error A match with that ID already exists");
+		return;
+	}
+
+	std::shared_ptr<Match> match = std::make_shared<Match>(id, hdl, color);
+	matchesByID.insert({id, match});
+	matchesByConnection.insert({hdl.lock().get(), match});
+	send(hdl, ":Joined " + id + " " + (color == Color::White? "white" : "black"));
+}
+
+void joinMatch(Connection hdl, const std::string &id) {
+	if (matchesByConnection.count(hdl.lock().get()) > 0) {
+		send(hdl, ":Error Already in a match");
+		return;
+	}
+
+	if (matchesByID.count(id) == 0) {
+		send(hdl, ":Error No match with that ID exists");
+		return;
+	}
+
+	std::shared_ptr<Match> match = matchesByID.at(id);
+	if (match->guest.has_value()) {
+		send(hdl, ":Error Match is full");
+		return;
+	}
+
+	matchesByConnection.insert({hdl.lock().get(), match});
+	match->guest = hdl;
+	send(hdl, ":Joined " + id + " " + (match->hostColor == Color::White? "black" : "white"));
+	send(match->host, ":Start ");
+	send(match->host, ":Turn white");
+	send(hdl, ":Start");
+	send(hdl, ":Turn white");
+	match->roll();
 }

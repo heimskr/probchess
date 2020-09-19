@@ -1,3 +1,6 @@
+const pieceMap = {bishop: "♝", king: "♚", knight: "♞", pawn: "♟", queen: "♛", rook: "♜"};
+const abbreviations = {b: "bishop", k: "king", h: "knight", p: "pawn", q: "queen", r: "rook"};
+
 class Square {
 	constructor(row_, column_) {
 		if (row_ instanceof Square) {

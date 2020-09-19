@@ -26,14 +26,6 @@ label {
 	padding-right: 5px;
 }
 
-#create {
-	margin-right: 3px;
-}
-
-#join {
-	margin-left: 3px;
-}
-
 #floaters {
 	position: fixed;
 	top: 10px;
