@@ -87,7 +87,7 @@ class Bishop extends Piece {
 
 class King extends Piece {
 	canMoveTo() {
-		return filterSquares([
+		return this.filterSquares([
 			new Square(this.square.row - 1, this.square.column),
 			new Square(this.square.row - 1, this.square.column + 1),
 			new Square(this.square.row,     this.square.column + 1),
