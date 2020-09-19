@@ -115,6 +115,10 @@ function connect() {
 	ws.onclose = ev => {
 		console.warn("Closing connection.");
 	};
+
+	ws.onerror = ev => {
+		$("#error").text("The server doesn't seem to be online.").addClass("visible");
+	};
 }
 
 function send(...a) {
