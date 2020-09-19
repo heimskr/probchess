@@ -37,10 +37,6 @@ int main(int argc, char **argv) {
 
 	signal(SIGINT, signal_handler);
 
-	Board board;
-	board.placePieces();
-	std::cout << std::string(board);
-
 	server = new asio_server;
 	server->set_error_channels(websocketpp::log::elevel::all);
 	server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
@@ -173,7 +169,6 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		}
 
 		send(hdl, ":MoveMade");
-		std::cout << std::string(match->board);
 		return;
 	}
 
@@ -192,7 +187,6 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		}
 
 		std::cout << "Show[" << (words[1][0] - '0') << "][" << (words[1][1] - '0') << "]\n";
-
 		std::cout << match->board.toString(match->board.at(words[1][0] - '0', words[1][1] - '0')) << "\n";
 		return;
 	}

@@ -41,16 +41,14 @@ function renderBoard(board, j) {
 		if (state.selected === null) {
 			const square = new Square(row, col);
 			const pair = board.at(square);
-			if (!pair || pair[1] != state.color)
+			if (!pair || pair[1] != state.color || col != state.column)
 				return;
 			state.selected = square;
 			cell.addClass("selected-piece");
 			const piece = Piece.create(state.board, pair, square);
-			console.log(piece.canMoveTo());
 			$(".square").removeClass("possible");
-			for (const move of piece.canMoveTo()) {
+			for (const move of piece.canMoveTo())
 				$(`#cell${move.row}${move.column}`).addClass("possible");
-			}
 		} else {
 			if (row != state.selected.row || col != state.selected.column)
 				move(`${state.selected.row}${state.selected.column}`, `${row}${col}`);

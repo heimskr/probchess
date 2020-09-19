@@ -7,20 +7,14 @@ class Piece {
 
 	filterSquares(squares) {
 		const out = [];
-		console.log("Pre filter:", squares);
 		for (const square of squares) {
-			if (!square.valid()) {
-				console.log("Square invalid:", square);
+			if (!square.valid())
 				continue;
-			}
 			const piece = this.board.at(square);
-			if (piece && piece[1] == this.color) {
-				console.log("Piece is same color:", piece);
+			if (piece && piece[1] == this.color)
 				continue;
-			}
 			out.push(square);
 		}
-		console.log("Post filter:", out);
 		return out;
 	}
 
@@ -124,7 +118,6 @@ class Knight extends Piece {
 class Pawn extends Piece {
 	canMoveTo() {
 		const out = [];
-		console.log("col:", this.square.column);
 		let next = new Square(this.square.row + (this.color == "black"? 1 : -1), this.square.column);
 		if (!this.board.at(next)) {
 			out.push(new Square(next));
@@ -245,11 +238,8 @@ class Rook extends Piece {
 		let next = new Square(this.square);
 		for (let i = 0; i < 7; ++i) { // up
 			--next.row;
-			if (!next.valid()) {
-				console.log("up:", next, "isn't valid; breaking");
+			if (!next.valid())
 				break;
-			}
-			console.log("up: adding", next);
 			out.push(new Square(next));
 			if (this.board.at(next))
 				break;
@@ -258,11 +248,8 @@ class Rook extends Piece {
 		next = new Square(this.square);
 		for (let i = 0; i < 7; ++i) { // down
 			++next.row;
-			if (!next.valid()) {
-				console.log("down:", next, "isn't valid; breaking");
+			if (!next.valid())
 				break;
-			}
-			console.log("down: adding", next);
 			out.push(new Square(next));
 			if (this.board.at(next))
 				break;
@@ -271,11 +258,8 @@ class Rook extends Piece {
 		next = new Square(this.square);
 		for (let i = 0; i < 7; ++i) { // left
 			--next.column;
-			if (!next.valid()) {
-				console.log("left:", next, "isn't valid; breaking");
+			if (!next.valid())
 				break;
-			}
-			console.log("left: adding", next);
 			out.push(new Square(next));
 			if (this.board.at(next))
 				break;
@@ -284,11 +268,8 @@ class Rook extends Piece {
 		next = new Square(this.square);
 		for (let i = 0; i < 7; ++i) { // right
 			++next.column;
-			if (!next.valid()) {
-				console.log("right:", next, "isn't valid; breaking");
+			if (!next.valid())
 				break;
-			}
-			console.log("right: adding", next);
 			out.push(new Square(next));
 			if (this.board.at(next))
 				break;

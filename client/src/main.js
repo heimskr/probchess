@@ -15,6 +15,7 @@ const state = {
 	started: false,
 	selected: null,
 	over: false,
+	column: null,
 };
 
 function connect() {
@@ -27,7 +28,6 @@ function connect() {
 	};
 
 	ws.onmessage = ev => {
-		console.info(ev.data);
 		if (ev.data.length < 2 || ev.data[0] != ":") {
 			console.error("Invalid message:", ev.data);
 			return;
@@ -55,10 +55,11 @@ function connect() {
 				.col${rest}.black { background: #444; }
 				.col${rest}.white { background: #bbb; }
 			`);
+			state.column = parseInt(rest);
 			if (state.color == "black")
-				$("#column").text(`Column: ${1 + parseInt(rest)} (${8 - parseInt(rest)} from your perspective)`);
+				$("#column").text(`Column: ${1 + state.column} (${8 - state.column} from your perspective)`);
 			else
-				$("#column").text("Column: " + (1 + parseInt(rest)));
+				$("#column").text("Column: " + (1 + state.column));
 			return;
 		}
 
@@ -92,18 +93,21 @@ function connect() {
 		if (verb == "Win") {
 			$("#status").text("You win!");
 			state.over = true;
+			$("#extraStyle, #column").text("");
 			return;
 		}
 
 		if (verb == "Lose") {
 			$("#status").text("You lose :(");
 			state.over = true;
+			$("#extraStyle, #column").text("");
 			return;
 		}
 
 		if (verb == "End") {
 			$("#status").text("Match ended unexpectedly.");
 			state.over = true;
+			$("#extraStyle, #column").text("");
 			return;
 		}
 	};
