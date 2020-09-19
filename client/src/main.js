@@ -13,3 +13,7 @@ function connect() {
 		console.warn("Closing connection.");
 	};
 }
+
+function send(...a) {
+	ws.send(...a);
+}

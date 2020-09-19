@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "Board.h"
+#include "ChessError.h"
 #include "Match.h"
 #include "Square.h"
 #include "Util.h"
@@ -34,13 +35,6 @@ int main(int argc, char **argv) {
 	}
 
 	signal(SIGINT, signal_handler);
-
-	Board board;
-	board.placePieces();
-	board.erase(0, 4);
-	board.erase(4, 4);
-	board.move(board.at(1, 1), 3, 2);
-	std::cout << std::string(board);
 
 	server = new asio_server;
 	server->set_error_channels(websocketpp::log::elevel::all);
@@ -117,7 +111,42 @@ void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_
 
 		std::shared_ptr<Match> match = matchesByID.at(words[1]);
 		matchesByConnection.insert({hdl.lock().get(), match});
+		match->guest = hdl;
 		send(hdl, ":Joined " + words[1] + " " + (match->hostColor == Color::White? "black" : "white"));
+		return;
+	}
+
+	if (verb == "Move") {
+		if (words.size() != 3) {
+			send(hdl, ":Error Invalid message");
+			return;
+		}
+
+		for (const std::string &str: {words[1], words[2]})
+			if (str.size() != 2 || str.find_first_not_of("01234567") != std::string::npos) {
+				send(hdl, ":Error Invalid message");
+				return;
+			}
+
+		if (matchesByConnection.count(hdl.lock().get()) == 0) {
+			send(hdl, ":Error Not in a match");
+			return;
+		}
+
+		std::shared_ptr<Match> match = matchesByConnection.at(hdl.lock().get());
+
+		Square from {words[1][0] - '0', words[1][1] - '0'};
+		Square to   {words[2][0] - '0', words[2][1] - '0'};
+
+		try {
+			match->makeMove(hdl, from, to);
+		} catch (ChessError &err) {
+			send(hdl, ":Error " + std::string(err.what()));
+			return;
+		}
+
+		send(hdl, ":MoveMade");
+		std::cout << std::string(match->board);
 		return;
 	}
 

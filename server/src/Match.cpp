@@ -57,6 +57,9 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	if (!from_piece)
 		throw ChessError("No source piece");
 
+	if (from_piece->color != currentTurn)
+		throw ChessError("Not your piece");
+
 	bool can_move = false;
 	for (const Square &possibility: from_piece->canMoveTo()) {
 		if (possibility == to) {
@@ -82,6 +85,8 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	}
 
 	board.move(from_piece, to);
+	// Check for pawns to promote
+	currentTurn = currentTurn == Color::White? Color::Black : Color::White;
 }
 
 websocketpp::connection_hdl Match::getWhite() const {
