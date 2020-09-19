@@ -1,6 +1,7 @@
 html {
 	cursor: url("cursor.png"), default;
 	background: red;
+	font-family: sans-serif;
 }
 
 main {
@@ -10,6 +11,8 @@ main {
 	bottom: 0px;
 	right: 300px;
 	background: green;
+	text-align: center;
+	padding: 20px;
 }
 
 aside {
@@ -21,10 +24,31 @@ aside {
 	background: blue;
 }
 
+form {
+	background: white;
+	display: inline-block;
+	padding: 10px;
+	border: 2px solid gray;
+}
+
+label {
+	padding-right: 5px;
+}
+
+#create {
+	margin-right: 3px;
+}
+
+#join {
+	margin-left: 3px;
+}
+
 table {
 	border-spacing: 0;
 	border: 2px solid gray;
+	position: relative;
 	margin: 0 auto;
+	top: calc(50vh - 239px);
 }
 
 td {

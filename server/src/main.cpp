@@ -93,7 +93,7 @@ void echo_handler(websocketpp::connection_hdl hdl, asio_server::message_ptr msg_
 		std::shared_ptr<Match> match = std::make_shared<Match>(words[1], hdl, color);
 		matchesByID.insert({words[1], match});
 		matchesByConnection.insert({hdl.lock().get(), match});
-		send(hdl, ":MatchCreated " + words[1] + " " + (color == Color::White? "white" : "black"));
+		send(hdl, ":Joined " + words[1] + " " + (color == Color::White? "white" : "black"));
 		return;
 	}
 
