@@ -83,13 +83,15 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	if (to_piece) {
 		if (to_piece->color == currentTurn)
 			throw ChessError("Can't capture own piece");
+		board.erase(to_piece);
 		if (dynamic_cast<King *>(to_piece.get())) {
+			board.move(from_piece, to);
+			checkPawns();
+			sendBoard();
 			winner = currentTurn;
 			end(hostColor == currentTurn? &host : &*guest);
 			return;
 		}
-
-		board.erase(to_piece);
 	}
 
 	board.move(from_piece, to);

@@ -33,21 +33,29 @@ function renderBoard(board, j) {
 
 	board.renderTo(j).find("td").on("click", ev => {
 		ev.preventDefault();
-		if (state.turn != state.color) {
+		if (state.turn != state.color)
 			return;
-		}
 
 		const cell = $(ev.target);
 		const row = parseInt(cell.attr("data-row")), col = parseInt(cell.attr("data-col"));
 		if (state.selected === null) {
-			state.selected = new Square(row, col);
+			const square = new Square(row, col);
+			const pair = board.at(square);
+			if (!pair || pair[1] != state.color)
+				return;
+			state.selected = square;
 			cell.addClass("selected-piece");
-		} else {
-			if (row != state.selected.row || col != state.selected.column) {
-				move(`${state.selected.row}${state.selected.column}`, `${row}${col}`);
+			const piece = Piece.create(state.board, pair, square);
+			console.log(piece.canMoveTo());
+			$(".square").removeClass("possible");
+			for (const move of piece.canMoveTo()) {
+				$(`#cell${move.row}${move.column}`).addClass("possible");
 			}
+		} else {
+			if (row != state.selected.row || col != state.selected.column)
+				move(`${state.selected.row}${state.selected.column}`, `${row}${col}`);
 			state.selected = null;
-			$("td.square").removeClass("selected-piece");
+			$("td.square").removeClass(["possible", "selected-piece"]);
 		}
 	});
 }

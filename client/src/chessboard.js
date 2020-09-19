@@ -28,7 +28,10 @@ class Chessboard {
 				const chunk = str.substr(i, 2);
 				const row = Math.floor(i / 16);
 				const col = (i / 2) % 8;
-				this.rows[row][col] = [abbreviations[chunk[0]], {B: "black", W: "white"}[chunk[1]]];
+				if (chunk == "__")
+					this.rows[row][col] = undefined;
+				else
+					this.rows[row][col] = [abbreviations[chunk[0]], {B: "black", W: "white"}[chunk[1]]];
 			}
 		}
 	}

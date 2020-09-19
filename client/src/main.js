@@ -14,6 +14,7 @@ const state = {
 	board: null,
 	started: false,
 	selected: null,
+	over: false,
 };
 
 function connect() {
@@ -50,7 +51,10 @@ function connect() {
 		}
 
 		if (verb == "Column") {
-			$("#extraStyle").text(`.col${rest}.black { background: #444; } .col${rest}.white { background: #bbb; }`);
+			$("#extraStyle").text(`
+				.col${rest}.black { background: #444; }
+				.col${rest}.white { background: #bbb; }
+			`);
 			if (state.color == "black")
 				$("#column").text(`Column: ${1 + parseInt(rest)} (${8 - parseInt(rest)} from your perspective)`);
 			else
@@ -82,6 +86,24 @@ function connect() {
 				state.selected = null;
 				$("td.square").removeClass("selected-piece");
 			}
+			return;
+		}
+
+		if (verb == "Win") {
+			$("#status").text("You win!");
+			state.over = true;
+			return;
+		}
+
+		if (verb == "Lose") {
+			$("#status").text("You lose :(");
+			state.over = true;
+			return;
+		}
+
+		if (verb == "End") {
+			$("#status").text("Match ended unexpectedly.");
+			state.over = true;
 			return;
 		}
 	};
