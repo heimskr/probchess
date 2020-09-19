@@ -4,7 +4,7 @@ OUTPUT		:= chess
 SOURCES		:= $(shell find src/*.cpp src/**/*.cpp)
 OBJECTS		:= $(SOURCES:.cpp=.o)
 CFLAGS		?= -Iinclude $(shell pkg-config --cflags boost openssl)
-LDFLAGS		?= $(shell pkg-config --libs boost openssl)
+LDFLAGS		?= $(shell pkg-config --libs boost openssl) -lpthread
 
 all: $(OUTPUT)
 
