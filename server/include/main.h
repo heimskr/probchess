@@ -13,6 +13,7 @@ extern std::unordered_map<std::string, std::shared_ptr<Match>> matchesByID;
 extern std::unordered_map<void *, std::shared_ptr<Match>> matchesByConnection;
 
 void echo_handler(Connection, asio_server::message_ptr);
+void open_handler(Connection);
 void close_handler(Connection);
 void signal_handler(int);
 

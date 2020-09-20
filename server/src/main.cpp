@@ -15,6 +15,7 @@
 asio_server *server;
 std::unordered_map<std::string, std::shared_ptr<Match>> matchesByID;
 std::unordered_map<void *, std::shared_ptr<Match>> matchesByConnection;
+std::list<Connection> connections;
 
 int main(int argc, char **argv) {
 	srand(time(NULL));
@@ -39,20 +40,29 @@ int main(int argc, char **argv) {
 	server->set_access_channels(websocketpp::log::alevel::none);
 	server->init_asio();
 	server->set_message_handler(std::bind(&echo_handler, std::placeholders::_1, std::placeholders::_2));
+	server->set_open_handler(std::bind(&open_handler, std::placeholders::_1));
 	server->set_close_handler(std::bind(&close_handler, std::placeholders::_1));
 	server->listen(port);
 	server->start_accept();
 	server->run();
+	delete server;
 }
 
 void signal_handler(int) {
 	std::cout << "Goodbye.\n";
-	server->stop();
 	server->stop_listening();
-	delete server;
+	for (Connection hdl: connections) {
+		server->pause_reading(hdl);
+		server->close(hdl, websocketpp::close::status::going_away, "Server shutting down.");
+	}
+}
+
+void open_handler(Connection hdl) {
+	connections.push_back(hdl);
 }
 
 void close_handler(Connection hdl) {
+	connections.remove_if([&](Connection connection) { return connection.lock().get() == hdl.lock().get(); });
 	std::shared_ptr<Match> match;
 	try {
 		match = matchesByConnection.at(hdl.lock().get());
