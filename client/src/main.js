@@ -1,4 +1,4 @@
-const WS_HOST = "192.168.0.8";
+const WS_HOST = window.location.host || "localhost";
 
 let ws;
 
