@@ -102,3 +102,40 @@ td.black.black-piece {
 td.possible {
 	background: #fe1 !important;
 }
+
+.active-column.black {
+	background: #444;
+}
+
+.active-column.white {
+	background: #bbb;
+}
+
+table:not(.inverted) tr:first-child td.active-column, table.inverted tr:last-child td.active-column {
+	border-top: 2px solid #a0a;
+}
+
+table:not(.inverted) tr:last-child td.active-column, table.inverted tr:first-child td.active-column {
+	border-bottom: 2px solid #a0a;
+}
+
+td.active-column {
+	border-left: 1px solid #a0a;
+	border-right: 1px solid #a0a;
+}
+
+table:not(.inverted) td.left-column, table.inverted td.right-column {
+	border-right: 1px solid #a0a;
+}
+
+table:not(.inverted) td.right-column, table.inverted td.left-column {
+	border-left: 1px solid #a0a;
+}
+
+td.black.last-move {
+	background: #600;
+}
+
+td.white.last-move {
+	background: #b00;
+}

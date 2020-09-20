@@ -47,11 +47,13 @@ function connect() {
 		}
 
 		if (verb == "Column") {
-			$("#extraStyle").text(`
-				.col${rest}.black { background: #444; }
-				.col${rest}.white { background: #bbb; }
-			`);
 			state.column = parseInt(rest);
+			$("td.square").removeClass(["active-column", "left-column", "right-column"]);
+			$(`.col${rest}`).addClass("active-column");
+			if (state.column != 0)
+				$(`.col${state.column - 1}`).addClass("left-column");
+			if (state.column != 7)
+				$(`.col${state.column + 1}`).addClass("right-column");
 			return;
 		}
 
@@ -85,27 +87,32 @@ function connect() {
 		if (verb == "Win") {
 			$("#status").text("You win!");
 			state.over = true;
-			$("#extraStyle").text("");
 			return;
 		}
 
 		if (verb == "Lose") {
 			$("#status").text("You lose :(");
 			state.over = true;
-			$("#extraStyle").text("");
 			return;
 		}
 
 		if (verb == "End") {
 			$("#status").text("Match ended unexpectedly.");
 			state.over = true;
-			$("#extraStyle").text("");
+			return;
+		}
+
+		if (verb == "MoveMade") {
+			$(".last-move").removeClass("last-move");
+			$(`#cell${split[1]}, #cell${split[2]}`).addClass("last-move");
 			return;
 		}
 	};
 	
 	ws.onclose = ev => {
 		console.warn("Closing connection.");
+		$("main").text("");
+		$("#error").text("The server has shut down.").addClass("visible");
 	};
 
 	ws.onerror = ev => {
