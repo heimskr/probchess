@@ -55,6 +55,7 @@ void signal_handler(int) {
 		server->pause_reading(hdl);
 		server->close(hdl, websocketpp::close::status::going_away, "Server shutting down.");
 	}
+	server->stop();
 }
 
 void open_handler(Connection hdl) {
@@ -67,12 +68,12 @@ void close_handler(Connection hdl) {
 	try {
 		match = matchesByConnection.at(hdl.lock().get());
 	} catch (std::out_of_range &) {
-		std::cerr << "Connection lost from client not in a match\n";
+		std::cerr << "Connection lost from client not in a match.\n";
 		return;
 	}
 
-	std::cerr << "Ending match " << match->id << ": connection lost.\n";
-	match->end(nullptr);
+	std::cerr << "Disconnecting client from match \e[33m" << match->id << "\e[39m.\n";
+	match->disconnect(hdl);
 }
 
 void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
@@ -86,7 +87,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	const std::string &verb = words[0];
 
 	if (verb == "Create") {
-		if (words.size() != 2 && words.size() != 3) {
+		if ((words.size() != 2 && words.size() != 3) || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
 		}
@@ -96,7 +97,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	}
 
 	if (verb == "Join") {
-		if (words.size() != 2) {
+		if (words.size() != 2 || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
 		}
@@ -106,7 +107,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	}
 
 	if (verb == "CreateOrJoin") {
-		if (words.size() != 2 && words.size() != 3) {
+		if ((words.size() != 2 && words.size() != 3) || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
 		}
@@ -136,7 +137,6 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		}
 
 		std::shared_ptr<Match> match = matchesByConnection.at(hdl.lock().get());
-
 		Square from {words[1][0] - '0', words[1][1] - '0'};
 		Square to   {words[2][0] - '0', words[2][1] - '0'};
 
@@ -193,6 +193,7 @@ void createMatch(Connection hdl, const std::string &id, Color color) {
 	matchesByID.insert({id, match});
 	matchesByConnection.insert({hdl.lock().get(), match});
 	send(hdl, ":Joined " + id + " " + (color == Color::White? "white" : "black"));
+	std::cout << "Client created match \e[32m" << id << "\e[39m.\n";
 }
 
 void joinMatch(Connection hdl, const std::string &id) {
@@ -207,17 +208,38 @@ void joinMatch(Connection hdl, const std::string &id) {
 	}
 
 	std::shared_ptr<Match> match = matchesByID.at(id);
-	if (match->guest.has_value()) {
+
+	if (match->host.has_value() && match->guest.has_value()) {
 		send(hdl, ":Error Match is full");
 		return;
 	}
 
 	matchesByConnection.insert({hdl.lock().get(), match});
-	match->guest = hdl;
 	send(hdl, ":Joined " + id + " " + (match->hostColor == Color::White? "black" : "white"));
-	send(match->host, ":Start ");
-	send(match->host, ":Turn white");
+
+	if (!match->started) {
+		match->sendBoth(":Start");
+	}
+
+	const char *as = "unknown";
+	if (!match->host.has_value()) {
+		match->host = hdl;
+		as = "host";
+	} else if (!match->guest.has_value()) {
+		match->guest = hdl;
+		as = "guest";
+	}
+
 	send(hdl, ":Start");
-	send(hdl, ":Turn white");
-	match->roll();
+	send(hdl, ":Turn " + std::string(match->currentTurn == Color::White? "white" : "black"));
+	match->sendBoard();
+
+	if (!match->started) {
+		match->started = true;
+		match->roll();
+	} else {
+		send(hdl, ":Column " + std::to_string(match->column));
+	}
+
+	std::cout << "Client joined match \e[32m" << id << "\e[39m as \e[1m" << as << "\e[22m.\n";
 }

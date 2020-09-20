@@ -11,10 +11,6 @@ id(id_), host(host_), hostColor(host_color) {
 	board.placePieces();
 }
 
-bool Match::active() const {
-	return guest.has_value();
-}
-
 void Match::roll() {
 	column = ((rand() % 6 + 1) + (rand() % 6 + 1));
 	if (8 < column)
@@ -25,34 +21,49 @@ void Match::roll() {
 
 void Match::end(Connection *winner) {
 	try {
-		if (winner == &host) {
-			send(host, ":Win");
-			if (guest.has_value())
-				send(*guest, ":Lose");
+		if (host.has_value() && winner == &*host) {
+			sendHost(":Win");
+			sendGuest(":Lose");
 		} else if (guest.has_value() && winner == &*guest) {
-			send(host, ":Lose");
-			send(*guest, ":Win");
+			sendHost(":Lose");
+			sendGuest(":Win");
 		} else sendBoth(":End");
 	} catch (websocketpp::exception &) {}
 	matchesByID.erase(id);
-	matchesByConnection.erase(host.lock().get());
+	if (host.has_value())
+		matchesByConnection.erase(host->lock().get());
 	if (guest.has_value())
 		matchesByConnection.erase(guest->lock().get());
 }
 
-void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square to) {
-	if (!active())
-		throw ChessError("Match not started");
+void Match::disconnect(Connection connection) {
+	if (host.has_value() && host->lock().get() == connection.lock().get())
+		host.reset();
+	else if (guest.has_value() && guest->lock().get() == connection.lock().get())
+		guest.reset();
+	if (!host.has_value() && !guest.has_value()) {
+		std::cout << "Ending match \e[31m" << id << "\e[39m: both clients disconnected.\n";
+		end(nullptr);
+	}
+}
+
+bool Match::hasBoth() const {
+	return host.has_value() && guest.has_value();
+}
+
+void Match::makeMove(Connection connection, Square from, Square to) {
+	if (!hasBoth())
+		throw ChessError("Match is missing a participant");
 
 	if (winner.has_value())
 		throw ChessError("Match already over");
 	
 	const void *address = connection.lock().get();
-	if (address != host.lock().get() && address != guest->lock().get())
+	if (address != host->lock().get() && address != guest->lock().get())
 		throw ChessError("Invalid connection");
 
 	const bool isHostTurn = currentTurn == hostColor;
-	if ((address == host.lock().get() && !isHostTurn) || (address == guest->lock().get() && isHostTurn))
+	if ((address == host->lock().get() && !isHostTurn) || (address == guest->lock().get() && isHostTurn))
 		throw ChessError("Invalid turn");
 
 	std::shared_ptr<Piece> from_piece = board.at(from);
@@ -89,7 +100,7 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 			checkPawns();
 			sendBoard();
 			winner = currentTurn;
-			end(hostColor == currentTurn? &host : &*guest);
+			end(hostColor == currentTurn? &*host : &*guest);
 			return;
 		}
 	}
@@ -157,8 +168,27 @@ bool Match::canMove() {
 	return false;
 }
 
+bool Match::sendHost(const std::string &message) {
+	if (host.has_value()) {
+		send(*host, message);
+		return true;
+	}
+
+	return false;
+}
+
+bool Match::sendGuest(const std::string &message) {
+	if (guest.has_value()) {
+		send(*guest, message);
+		return true;
+	}
+
+	return false;
+}
+
 void Match::sendBoth(const std::string &message) {
-	send(host, message);
+	if (host.has_value())
+		send(*host, message);
 	if (guest.has_value())
 		send(*guest, message);
 }
@@ -192,15 +222,16 @@ void Match::sendBoard() {
 			}
 		}
 	}
+
 	sendBoth(":Board " + encoded);
 }
 
 websocketpp::connection_hdl Match::getWhite() const {
-	return hostColor == Color::White? host : *guest;
+	return hostColor == Color::White? *host : *guest;
 }
 
 websocketpp::connection_hdl Match::getBlack() const {
-	return hostColor == Color::Black? host : *guest;
+	return hostColor == Color::Black? *host : *guest;
 }
 
 websocketpp::connection_hdl Match::get(Color color) const {
