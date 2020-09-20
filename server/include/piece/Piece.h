@@ -25,6 +25,7 @@ class Piece {
 		Piece(Board *parent_, Color color_, int row, int column): Piece(parent_, color_, {row, column}) {}
 
 		virtual std::list<Square> canMoveTo() const = 0;
+		virtual std::string name() const = 0;
 		virtual std::string toString(Color) const = 0;
 
 		operator std::string() const { return toString(color); }

@@ -107,12 +107,21 @@ function connect() {
 			$(`#cell${split[1]}, #cell${split[2]}`).addClass("last-move");
 			return;
 		}
+
+		if (verb == "Capture") {
+			const span = $("<span></span>").html(pieceMap[split[2]]).addClass(split[3]);
+			if (split[3] == state.color)
+				$("#table-container #before").append(span);
+			else
+				$("#table-container #after").append(span);
+			return;
+		}
 	};
 	
 	ws.onclose = ev => {
 		console.warn("Closing connection.");
 		$("main").text("");
-		$("#error").text("The server has shut down.").addClass("visible");
+		$("#error").text("The server is offline.").addClass("visible");
 	};
 
 	ws.onerror = ev => {

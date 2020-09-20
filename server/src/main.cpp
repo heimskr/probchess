@@ -74,6 +74,7 @@ void close_handler(Connection hdl) {
 
 	std::cerr << "Disconnecting client from match \e[33m" << match->id << "\e[39m.\n";
 	match->disconnect(hdl);
+	matchesByConnection.erase(hdl.lock().get());
 }
 
 void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
@@ -215,7 +216,10 @@ void joinMatch(Connection hdl, const std::string &id) {
 	}
 
 	matchesByConnection.insert({hdl.lock().get(), match});
-	send(hdl, ":Joined " + id + " " + (match->hostColor == Color::White? "black" : "white"));
+	if (!match->host.has_value())
+		send(hdl, ":Joined " + id + " " + colorName(match->hostColor));
+	else
+		send(hdl, ":Joined " + id + " " + (match->hostColor == Color::White? "black" : "white"));
 
 	if (!match->started) {
 		match->sendBoth(":Start");
@@ -239,6 +243,8 @@ void joinMatch(Connection hdl, const std::string &id) {
 		match->roll();
 	} else {
 		send(hdl, ":Column " + std::to_string(match->column));
+		for (const std::shared_ptr<Piece> &piece: match->captured)
+			match->sendCaptured(hdl, piece);
 	}
 
 	std::cout << "Client joined match \e[32m" << id << "\e[39m as \e[1m" << as << "\e[22m.\n";

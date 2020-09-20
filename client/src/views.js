@@ -25,7 +25,8 @@ function renderBoard(board, j) {
 		return;
 	}
 
-	board.renderTo(j).find("td").on("click", ev => {
+	const container = $(`<div id="table-container"></div>`).appendTo(j.text(""));
+	board.renderTo(container).find("td").on("click", ev => {
 		ev.preventDefault();
 		if (state.turn != state.color)
 			return;
@@ -50,4 +51,6 @@ function renderBoard(board, j) {
 			$("td.square").removeClass(["possible", "selected-piece"]);
 		}
 	});
+	$(`<div id="before"></div>`).prependTo(container);
+	$(`<div id="after"></div>`).appendTo(container);
 }

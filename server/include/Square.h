@@ -28,6 +28,7 @@ class Square {
 		Square operator<<=(int column_shift) { column -= column_shift; return *this; }
 		Square operator>>=(int column_shift) { column += column_shift; return *this; }
 		operator bool() const { return 0 <= row && row < 8 && 0 <= column && column < 8; }
+		operator std::string() const { return std::to_string(row) + std::to_string(column); }
 
 		Square operator+(const std::pair<int, int> &offsets) const {
 			return Square(row + offsets.first, column + offsets.second);

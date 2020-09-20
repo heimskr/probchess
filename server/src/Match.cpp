@@ -42,7 +42,7 @@ void Match::disconnect(Connection connection) {
 	else if (guest.has_value() && guest->lock().get() == connection.lock().get())
 		guest.reset();
 	if (!host.has_value() && !guest.has_value()) {
-		std::cout << "Ending match \e[31m" << id << "\e[39m: both clients disconnected.\n";
+		std::cout << "Ending match \e[31m" << id << "\e[39m: all clients disconnected.\n";
 		end(nullptr);
 	}
 }
@@ -94,6 +94,9 @@ void Match::makeMove(Connection connection, Square from, Square to) {
 	if (to_piece) {
 		if (to_piece->color == currentTurn)
 			throw ChessError("Can't capture own piece");
+		sendCaptured(*host, to_piece);
+		sendCaptured(*guest, to_piece);
+		captured.push_back(to_piece);
 		board.erase(to_piece);
 		if (dynamic_cast<King *>(to_piece.get())) {
 			board.move(from_piece, to);
@@ -191,6 +194,10 @@ void Match::sendBoth(const std::string &message) {
 		send(*host, message);
 	if (guest.has_value())
 		send(*guest, message);
+}
+
+void Match::sendCaptured(Connection connection, std::shared_ptr<Piece> piece) {
+	send(connection, ":Capture " + std::string(piece->square) + " " + piece->name() + " " + colorName(piece->color));
 }
 
 void Match::sendBoard() {

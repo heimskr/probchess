@@ -12,13 +12,15 @@ main {
 	right: 0px;
 	background: green;
 	text-align: center;
-	padding: 20px;
+	width: 100%;
+	height: 100%;
 }
 
 form {
 	background: white;
 	display: inline-block;
 	padding: 10px;
+	margin-top: 20px;
 	border: 2px solid gray;
 }
 
@@ -43,12 +45,33 @@ label {
 	color: red;
 }
 
+#table-container {
+	position: relative;
+	top: 50%;
+	transform: translate(0, -50%);
+	display: inline-block;
+}
+
+#before, #after {
+	height: 40px;
+	padding-left: 7px;
+	font: 30px monospace;
+	text-align: left;
+}
+
+#before span.white, #after span.white {
+	color: white;
+	text-shadow: 1px 1px 0px black, 1px -1px 0px black, -1px 1px 0px black, -1px -1px 0px black;
+}
+
+#before span.black, #after span.black {
+	color: black;
+	text-shadow: 1px 1px 0px white, 1px -1px 0px white, -1px 1px 0px white, -1px -1px 0px white;
+}
+
 table {
 	border-spacing: 0;
 	border: 2px solid gray;
-	position: relative;
-	margin: 0 auto;
-	top: calc(50vh - 239px);
 	background: gray;
 }
 
