@@ -113,3 +113,7 @@ std::string Board::toString(std::shared_ptr<Piece> show_moves) const {
 Board::operator std::string() const {
 	return toString(nullptr);
 }
+
+std::ostream & operator<<(std::ostream &os, const Board &board) {
+	return os << std::string(board);
+}

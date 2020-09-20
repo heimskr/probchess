@@ -2,6 +2,7 @@
 #define CHESS_PIECE_PIECE_H_
 
 #include <list>
+#include <ostream>
 #include <string>
 
 #include "../Color.h"
@@ -28,5 +29,7 @@ class Piece {
 
 		operator std::string() const { return toString(color); }
 };
+
+std::ostream & operator<<(std::ostream &, const Piece &);
 
 #endif

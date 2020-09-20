@@ -19,3 +19,7 @@ std::list<Square> & Piece::filter(std::list<Square> &squares) const {
 
 	return squares;
 }
+
+std::ostream & operator<<(std::ostream &os, const Piece &piece) {
+	return os << std::string(piece);
+}

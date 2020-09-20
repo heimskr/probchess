@@ -31,4 +31,6 @@ class Board {
 		}
 };
 
+std::ostream & operator<<(std::ostream &, const Board &);
+
 #endif

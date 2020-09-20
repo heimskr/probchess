@@ -97,6 +97,7 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 	board.move(from_piece, to);
 	checkPawns();
 	sendBoard();
+	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
 	while (true) {
 		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
 		const std::string turn_str = currentTurn == Color::White? "white" : "black";
@@ -106,6 +107,7 @@ void Match::makeMove(websocketpp::connection_hdl connection, Square from, Square
 			sendBoth(":Skip");
 		} else break;
 	}
+	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
 }
 
 void Match::checkPawns() {
@@ -127,12 +129,31 @@ void Match::checkPawns() {
 }
 
 bool Match::canMove() {
+	std::cout << board << "\n";
+	std::cout << "Scanning column \e[1m" << column << "\e[22m for pieces.\n";
 	for (int row = 0; row < 8; ++row) {
 		std::shared_ptr<Piece> piece = board.at(row, column);
-		if (piece && piece->color == currentTurn && !piece->canMoveTo().empty())
-			return true;
+		if (piece) {
+			std::cout << "\e[2m-\e[22m Found a piece at " << row << column << ": " << *piece << "\n";
+			if (piece->color == currentTurn) {
+				std::cout << "\e[2m--\e[22m Correct color.\n";
+				std::cout << "\e[2m---\e[22m Moves:";
+				for (const Square &move: piece->canMoveTo())
+					std::cout << " " << move;
+				std::cout << "\n";
+				if (piece->canMoveTo().empty())
+					std::cout << "\e[2m---\e[22m No moves.\n";
+				else {
+					std::cout << "\e[2;32m---\e[22m A move was found.\e[0m\n";
+					return true;
+				}
+			} else std::cout << "\e[2m--\e[22m Incorrect color.\n";
+		} else std::cout << "\e[2m-\e[22m No piece at " << row << column << ".\n";
+		// if (piece && piece->color == currentTurn && !piece->canMoveTo().empty())
+		// 	return true;
 	}
 
+	std::cout << "\e[31mNo moves were found.\e[0m\n";
 	return false;
 }
 

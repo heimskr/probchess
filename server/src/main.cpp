@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 
 	server = new asio_server;
 	server->set_error_channels(websocketpp::log::elevel::all);
-	server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
+	// server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
 	server->init_asio();
 	server->set_message_handler(std::bind(&echo_handler, std::placeholders::_1, std::placeholders::_2));
 	server->set_close_handler(std::bind(&close_handler, std::placeholders::_1));
