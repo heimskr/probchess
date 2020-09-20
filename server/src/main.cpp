@@ -147,7 +147,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 			return;
 		}
 
-		send(hdl, ":MoveMade");
+		match->sendBoth(":MoveMade " + words[1] + " " + words[2]);
 		return;
 	}
 
