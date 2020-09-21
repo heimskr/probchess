@@ -16,7 +16,7 @@ void Match::roll() {
 	if (8 < column)
 		column -= 8;
 	--column;
-	sendBoth(":Column " + std::to_string(column));
+	sendAll(":Column " + std::to_string(column));
 }
 
 void Match::end(Connection *winner) {
@@ -28,20 +28,37 @@ void Match::end(Connection *winner) {
 			sendHost(":Lose");
 			sendGuest(":Win");
 		} else sendBoth(":End");
+		sendSpectators(":Win " + colorName(winner == &*host? hostColor : otherColor(hostColor)));
 	} catch (websocketpp::exception &) {}
+
 	matchesByID.erase(id);
+
 	if (host.has_value())
 		matchesByConnection.erase(host->lock().get());
+
 	if (guest.has_value())
 		matchesByConnection.erase(guest->lock().get());
+
+	for (Connection spectator: spectators)
+		matchesByConnection.erase(spectator.lock().get());
+
 	if (!hidden)
 		broadcast(":RemoveMatch " + id);
 }
 
 void Match::disconnect(Connection connection) {
-	if (host.has_value() && host->lock().get() == connection.lock().get())
+	const void *vptr = connection.lock().get();
+
+	for (Connection spectator: spectators) {
+		if (spectator.lock().get() == vptr) {
+			spectators.remove_if([&](Connection hdl) { return hdl.lock().get() == vptr; });
+			return;
+		}
+	}
+
+	if (host.has_value() && host->lock().get() == vptr)
 		host.reset();
-	else if (guest.has_value() && guest->lock().get() == connection.lock().get())
+	else if (guest.has_value() && guest->lock().get() == vptr)
 		guest.reset();
 
 	if (!host.has_value() && !guest.has_value()) {
@@ -100,6 +117,8 @@ void Match::makeMove(Connection connection, Square from, Square to) {
 			throw ChessError("Can't capture own piece");
 		sendCaptured(*host, to_piece);
 		sendCaptured(*guest, to_piece);
+		for (Connection spectator: spectators)
+			sendCaptured(spectator, to_piece);
 		captured.push_back(to_piece);
 		board.erase(to_piece);
 		if (dynamic_cast<King *>(to_piece.get())) {
@@ -119,10 +138,10 @@ void Match::makeMove(Connection connection, Square from, Square to) {
 	while (true) {
 		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
 		const std::string turn_str = currentTurn == Color::White? "white" : "black";
-		sendBoth(":Turn " + turn_str);
+		sendAll(":Turn " + turn_str);
 		roll();
 		if (!canMove()) {
-			sendBoth(":Skip");
+			sendAll(":Skip");
 		} else break;
 	}
 	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
@@ -200,6 +219,16 @@ void Match::sendBoth(const std::string &message) {
 		send(*guest, message);
 }
 
+void Match::sendAll(const std::string &message) {
+	sendBoth(message);
+	sendSpectators(message);
+}
+
+void Match::sendSpectators(const std::string &message) {
+	for (Connection spectator: spectators)
+		send(spectator, message);
+}
+
 void Match::sendCaptured(Connection connection, std::shared_ptr<Piece> piece) {
 	send(connection, ":Capture " + std::string(piece->square) + " " + piece->name() + " " + colorName(piece->color));
 }
@@ -234,7 +263,7 @@ void Match::sendBoard() {
 		}
 	}
 
-	sendBoth(":Board " + encoded);
+	sendAll(":Board " + encoded);
 }
 
 Connection Match::getWhite() const {

@@ -18,6 +18,6 @@ void close_handler(Connection);
 void signal_handler(int);
 
 void createMatch(Connection, const std::string &id, Color, bool hidden);
-void joinMatch(Connection, const std::string &id);
+void joinMatch(Connection, const std::string &id, bool as_spectator);
 
 #endif

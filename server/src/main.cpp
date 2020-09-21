@@ -103,7 +103,17 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 			return;
 		}
 
-		joinMatch(hdl, words[1]);
+		joinMatch(hdl, words[1], false);
+		return;
+	}
+
+	if (verb == "Spectate") { // :Spectate <id>
+		if (words.size() != 2 || words[1].empty()) {
+			send(hdl, ":Error Invalid message");
+			return;
+		}
+
+		joinMatch(hdl, words[1], true);
 		return;
 	}
 
@@ -114,7 +124,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		}
 
 		if (matchesByID.count(words[1]) > 0)
-			joinMatch(hdl, words[1]);
+			joinMatch(hdl, words[1], false);
 		else
 			createMatch(hdl, words[1], 3 <= words.size() && words[2] == "black"? Color::Black : Color::White,
 			                           4 <= words.size() && words[3] == "hidden");
@@ -149,7 +159,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 			return;
 		}
 
-		match->sendBoth(":MoveMade " + words[1] + " " + words[2]);
+		match->sendAll(":MoveMade " + words[1] + " " + words[2]);
 		return;
 	}
 
@@ -211,7 +221,7 @@ void createMatch(Connection hdl, const std::string &id, Color color, bool hidden
 		broadcast(":Match " + match->id + " " + (match->hasBoth()? "closed" : "open"));
 }
 
-void joinMatch(Connection hdl, const std::string &id) {
+void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 	if (matchesByConnection.count(hdl.lock().get()) > 0) {
 		send(hdl, ":Error Already in a match");
 		return;
@@ -224,23 +234,30 @@ void joinMatch(Connection hdl, const std::string &id) {
 
 	std::shared_ptr<Match> match = matchesByID.at(id);
 
-	if (match->host.has_value() && match->guest.has_value()) {
+	if (!as_spectator && match->host.has_value() && match->guest.has_value()) {
 		send(hdl, ":Error Match is full");
 		return;
 	}
 
 	matchesByConnection.insert({hdl.lock().get(), match});
-	if (!match->host.has_value())
+	if (as_spectator)
+		send(hdl, ":Joined " + id + " spectator");
+	else if (!match->host.has_value())
 		send(hdl, ":Joined " + id + " " + colorName(match->hostColor));
 	else
 		send(hdl, ":Joined " + id + " " + (match->hostColor == Color::White? "black" : "white"));
 
-	if (!match->started) {
-		match->sendBoth(":Start");
-	}
+	if (as_spectator) {
+		if (match->started)
+			send(hdl, ":Start");
+	} else if (!match->started)
+		match->sendAll(":Start");
 
 	const char *as = "unknown";
-	if (!match->host.has_value()) {
+	if (as_spectator) {
+		match->spectators.push_back(hdl);
+		as = "spectator";
+	} else if (!match->host.has_value()) {
 		match->host = hdl;
 		as = "host";
 	} else if (!match->guest.has_value()) {
@@ -248,11 +265,15 @@ void joinMatch(Connection hdl, const std::string &id) {
 		as = "guest";
 	}
 
-	send(hdl, ":Start");
-	send(hdl, ":Turn " + std::string(match->currentTurn == Color::White? "white" : "black"));
+	if (!as_spectator)
+		send(hdl, ":Start");
+
+	if (match->hasBoth())
+		match->sendAll(":Turn " + std::string(match->currentTurn == Color::White? "white" : "black"));
+
 	match->sendBoard();
 
-	if (!match->started) {
+	if (!as_spectator && !match->started) {
 		match->started = true;
 		match->roll();
 	} else {
@@ -261,7 +282,7 @@ void joinMatch(Connection hdl, const std::string &id) {
 			match->sendCaptured(hdl, piece);
 	}
 
-	if (!match->hidden)
+	if (!as_spectator && !match->hidden)
 		broadcast(":Match " + match->id + " " + (match->hasBoth()? "closed" : "open"));
 
 	std::cout << "Client joined match \e[32m" << id << "\e[39m as \e[1m" << as << "\e[22m.\n";

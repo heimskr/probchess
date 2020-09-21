@@ -19,6 +19,7 @@ class Match {
 		int column = -1;
 		bool started = false;
 		std::list<std::shared_ptr<Piece>> captured;
+		std::list<Connection> spectators;
 
 		Match(const std::string &id_, bool hidden_, Connection host_, Color host_color);
 
@@ -32,6 +33,8 @@ class Match {
 		bool sendHost(const std::string &);
 		bool sendGuest(const std::string &);
 		void sendBoth(const std::string &);
+		void sendAll(const std::string &);
+		void sendSpectators(const std::string &);
 		void sendCaptured(Connection, std::shared_ptr<Piece>);
 		void sendBoard();
 		Connection getWhite() const;

@@ -14,6 +14,7 @@ const state = {
 	selected: null,
 	over: false,
 	column: null,
+	spectator: false,
 	matches: [],
 };
 
@@ -47,6 +48,7 @@ function connect() {
 			$("#status").text("Waiting for another player to join.");
 			if (split[2] == "black")
 				state.board.invert();
+			state.spectator = split[2] == "spectator";
 			return;
 		}
 
@@ -79,7 +81,11 @@ function connect() {
 		}
 
 		if (verb == "Turn") {
-			$("#status").text(rest == state.color? "It's your turn." : "It's the opponent's turn.");
+			if (state.spectator) {
+				if (state.started)
+					$("#status").text(`It's ${rest}'s turn.`);
+			} else
+				$("#status").text(rest == state.color? "It's your turn." : "It's the opponent's turn.");
 			state.turn = rest;
 			if (rest != state.color) {
 				state.selected = null;

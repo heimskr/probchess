@@ -33,14 +33,10 @@ function renderMatchTable(table) {
 	for (const key of Object.keys(state.matches).sort()) {
 		const open = state.matches[key] == "open";
 		const row = $("<tr></tr>").attr("id", "match-" + key).appendTo(table);
-		$("<button></button>").text(open? "Join" : "View").appendTo($("<td></td>").appendTo(row)).on("click", ev => {
-			if (open) {
-				send(`:Join ${key}`);
-			} else {
-				alert("Spectator mode is currently unimplemented.");
-				// send(`:View ${key}`);
-			}
-		});
+		$("<button>Join</button>").attr({disabled: !open}).appendTo($("<td></td>").appendTo(row)).on("click", ev =>
+			send(`:Join ${key}`));
+		$("<button>Spectate</button>").appendTo($("<td></td>").appendTo(row)).on("click", ev =>
+			send(`:Spectate ${key}`));
 		$("<td></td>").text(key).appendTo(row);
 		$("<td></td>").text(open? "Open" : "Closed").css({color: open? "green" : "red"}).appendTo(row);
 	}
@@ -56,7 +52,7 @@ function renderBoard(board, j) {
 	const container = $(`<div id="table-container"></div>`).appendTo(j.text(""));
 	board.renderTo(container).find("td").on("click", ev => {
 		ev.preventDefault();
-		if (state.turn != state.color)
+		if (state.turn != state.color || state.spectator)
 			return;
 
 		const cell = $(ev.target);

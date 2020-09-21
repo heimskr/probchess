@@ -35,7 +35,6 @@ main > * {
 #joinForm, #matches {
 	background: white;
 	border: 2px solid gray;
-	padding: 10px;
 }
 
 #matches {
@@ -46,6 +45,11 @@ main > * {
 	background: white;
 	display: inline-block;
 	margin-top: 20px;
+	padding: 10px;
+}
+
+#matches td {
+	width: 0;
 }
 
 label {
