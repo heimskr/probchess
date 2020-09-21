@@ -16,12 +16,32 @@ main {
 	height: 100%;
 }
 
-form {
+main > * {
+	text-align: left;
+}
+
+#joinForm > div {
+	text-align: center;
+}
+
+#matches {
+	margin: 10px auto;
+}
+
+#matches:empty {
+	display: none;
+}
+
+#joinForm, #matches {
+	background: white;
+	border: 2px solid gray;
+}
+
+#joinForm {
 	background: white;
 	display: inline-block;
 	padding: 10px;
 	margin-top: 20px;
-	border: 2px solid gray;
 }
 
 label {
@@ -46,9 +66,10 @@ label {
 }
 
 #table-container {
-	position: relative;
+	position: absolute;
 	top: 50%;
-	transform: translate(0, -50%);
+	left: 50%;
+	transform: translate(-50%, -50%);
 	display: inline-block;
 }
 
@@ -69,18 +90,18 @@ label {
 	text-shadow: 1px 1px 0px white, 1px -1px 0px white, -1px 1px 0px white, -1px -1px 0px white;
 }
 
-table {
+#board {
 	border-spacing: 0;
 	border: 2px solid gray;
 	background: gray;
 }
 
 /* l m a o */
-table.inverted, table.inverted td {
+#board.inverted, #board.inverted td {
 	transform: rotate(180deg);
 }
 
-td {
+#board td {
 	text-align: center;
 	vertical-align: middle;
 	width: 50px;
@@ -90,75 +111,76 @@ td {
 	user-select: none;
 }
 
-table:not(.inverted) td.selected-piece {
+#board:not(.inverted) td.selected-piece {
 	transform: scale(0.8);
 }
 
-table.inverted td.selected-piece {
+#board.inverted td.selected-piece {
 	transform: scale(0.8) rotate(180deg);
 }
 
-td.white {
+#board td.white {
 	background: white;
 }
 
-td.black {
+#board td.black {
 	background: black;
 }
 
-td.white-piece {
+#board td.white-piece {
 	color: white;
 }
 
-td.black-piece {
+#board td.black-piece {
 	color: black;
 }
 
-td.white.white-piece {
+#board td.white.white-piece {
 	text-shadow: 1px 1px 0px black, 1px -1px 0px black, -1px 1px 0px black, -1px -1px 0px black;
 }
 
-td.black.black-piece {
+#board td.black.black-piece {
 	text-shadow: 1px 1px 0px white, 1px -1px 0px white, -1px 1px 0px white, -1px -1px 0px white;
 }
 
-td.possible {
+#board td.possible {
 	background: #fe1 !important;
 }
 
-.active-column.black {
+#board td.active-column.black {
 	background: #444;
 }
 
-.active-column.white {
+#board td.active-column.white {
 	background: #bbb;
 }
 
-table:not(.inverted) tr:first-child td.active-column, table.inverted tr:last-child td.active-column {
+/* #board:not(.inverted) tr:first-child td.active-column, #board.inverted tr:last-child td.active-column {
 	border-top: 2px solid #a0a;
 }
 
-table:not(.inverted) tr:last-child td.active-column, table.inverted tr:first-child td.active-column {
+#board:not(.inverted) tr:last-child td.active-column, #board.inverted tr:first-child td.active-column {
 	border-bottom: 2px solid #a0a;
 }
 
-td.active-column {
+#board td.active-column {
 	border-left: 1px solid #a0a;
 	border-right: 1px solid #a0a;
 }
 
-table:not(.inverted) td.left-column, table.inverted td.right-column {
+#board:not(.inverted) td.left-column, #board.inverted td.right-column {
 	border-right: 1px solid #a0a;
 }
 
-table:not(.inverted) td.right-column, table.inverted td.left-column {
+#board:not(.inverted) td.right-column, #board.inverted td.left-column {
 	border-left: 1px solid #a0a;
-}
+} */
 
-td.black.last-move {
+#board td.black.last-move {
 	background: #600;
 }
 
-td.white.last-move {
-	background: #b00;
+#board td.white.last-move {
+	background: #600;
+	/* background: #b00; */
 }

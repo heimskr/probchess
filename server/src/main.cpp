@@ -15,7 +15,6 @@
 asio_server *server;
 std::unordered_map<std::string, std::shared_ptr<Match>> matchesByID;
 std::unordered_map<void *, std::shared_ptr<Match>> matchesByConnection;
-std::list<Connection> connections;
 
 int main(int argc, char **argv) {
 	srand(time(NULL));
@@ -88,12 +87,13 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	const std::string &verb = words[0];
 
 	if (verb == "Create") {
-		if ((words.size() != 2 && words.size() != 3) || words[1].empty()) {
+		if ((words.size() < 2 && 4 < words.size()) || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
 		}
 
-		createMatch(hdl, words[1], words.size() == 3 && words[2] == "black"? Color::Black : Color::White);
+		createMatch(hdl, words[1], 3 <= words.size() && words[2] == "black"? Color::Black : Color::White,
+		                           4 <= words.size() && words[3] == "hidden");
 		return;
 	}
 
@@ -108,7 +108,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	}
 
 	if (verb == "CreateOrJoin") {
-		if ((words.size() != 2 && words.size() != 3) || words[1].empty()) {
+		if ((words.size() < 2 && 4 < words.size()) || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
 		}
@@ -116,7 +116,8 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		if (matchesByID.count(words[1]) > 0)
 			joinMatch(hdl, words[1]);
 		else
-			createMatch(hdl, words[1], words.size() == 3 && words[2] == "black"? Color::Black : Color::White);
+			createMatch(hdl, words[1], 3 <= words.size() && words[2] == "black"? Color::Black : Color::White,
+			                           4 <= words.size() && words[3] == "hidden");
 		return;
 	}
 
@@ -171,10 +172,21 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
+	if (verb == "GetMatches") {
+		send(hdl, ":ClearMatches");
+		for (const std::pair<const std::string, std::shared_ptr<Match>> &pair: matchesByID) {
+			const std::shared_ptr<Match> match = pair.second;
+			if (!match->hidden)
+				send(hdl, ":Match " + pair.first + " " + (match->hasBoth()? "closed" : "open"));
+		}
+
+		return;
+	}
+
 	send(hdl, ":Error Unknown message type");
 }
 
-void createMatch(Connection hdl, const std::string &id, Color color) {
+void createMatch(Connection hdl, const std::string &id, Color color, bool hidden) {
 	if (id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos) {
 		send(hdl, ":Error Invalid match ID");
 		return;
@@ -190,7 +202,7 @@ void createMatch(Connection hdl, const std::string &id, Color color) {
 		return;
 	}
 
-	std::shared_ptr<Match> match = std::make_shared<Match>(id, hdl, color);
+	std::shared_ptr<Match> match = std::make_shared<Match>(id, hidden, hdl, color);
 	matchesByID.insert({id, match});
 	matchesByConnection.insert({hdl.lock().get(), match});
 	send(hdl, ":Joined " + id + " " + (color == Color::White? "white" : "black"));
@@ -246,6 +258,9 @@ void joinMatch(Connection hdl, const std::string &id) {
 		for (const std::shared_ptr<Piece> &piece: match->captured)
 			match->sendCaptured(hdl, piece);
 	}
+
+	if (!match->hidden)
+		broadcast(":Match " + match->id + " " + (match->hasBoth()? "closed" : "open"));
 
 	std::cout << "Client joined match \e[32m" << id << "\e[39m as \e[1m" << as << "\e[22m.\n";
 }

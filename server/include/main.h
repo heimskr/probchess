@@ -17,7 +17,7 @@ void open_handler(Connection);
 void close_handler(Connection);
 void signal_handler(int);
 
-void createMatch(Connection, const std::string &id, Color);
+void createMatch(Connection, const std::string &id, Color, bool hidden);
 void joinMatch(Connection, const std::string &id);
 
 #endif

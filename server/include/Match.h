@@ -9,6 +9,7 @@
 class Match {
 	public:
 		const std::string id;
+		bool hidden;
 		std::optional<Connection> host;
 		std::optional<Connection> guest;
 		Color currentTurn = Color::White;
@@ -19,7 +20,7 @@ class Match {
 		bool started = false;
 		std::list<std::shared_ptr<Piece>> captured;
 
-		Match(const std::string &id_, Connection host_, Color host_color);
+		Match(const std::string &id_, bool hidden_, Connection host_, Color host_color);
 
 		void roll();
 		void end(Connection *winner);

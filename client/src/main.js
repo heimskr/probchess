@@ -3,6 +3,7 @@ const WS_HOST = window.location.host || "localhost";
 let ws;
 
 const state = {
+	view: null,
 	connected: false,
 	turn: null,
 	joined: false,
@@ -13,6 +14,7 @@ const state = {
 	selected: null,
 	over: false,
 	column: null,
+	matches: [],
 };
 
 function connect() {
@@ -28,6 +30,8 @@ function connect() {
 			console.error("Invalid message:", ev.data);
 			return;
 		}
+
+		console.log(ev.data);
 
 		const split = ev.data.split(" ");
 		const verb = split[0].substr(1);
@@ -116,8 +120,31 @@ function connect() {
 				$("#table-container #after").append(span);
 			return;
 		}
+
+		if (verb == "ClearMatches") {
+			state.matches = [];
+			if (state.view == "join")
+				$("#matches").text("");
+			return;
+		}
+
+		if (verb == "Match") {
+			state.matches[split[1]] = split[2];
+			if (state.view == "join")
+				renderMatchTable($("#matches"));
+			return;
+		}
+
+		if (verb == "RemoveMatch") {
+			delete state.matches[split[1]];
+			if (state.view == "join")
+				renderMatchTable($("#matches"));
+			return;
+		}
+
+		console.warn("Unknown verb:", verb);
 	};
-	
+
 	ws.onclose = ev => {
 		console.warn("Closing connection.");
 		$("main").text("");

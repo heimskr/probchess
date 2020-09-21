@@ -6,8 +6,8 @@
 #include "main.h"
 #include "piece/all.h"
 
-Match::Match(const std::string &id_, websocketpp::connection_hdl host_, Color host_color):
-id(id_), host(host_), hostColor(host_color) {
+Match::Match(const std::string &id_, bool hidden_, Connection host_, Color host_color):
+id(id_), hidden(hidden_), host(host_), hostColor(host_color) {
 	board.placePieces();
 }
 
@@ -34,6 +34,7 @@ void Match::end(Connection *winner) {
 		matchesByConnection.erase(host->lock().get());
 	if (guest.has_value())
 		matchesByConnection.erase(guest->lock().get());
+	broadcast(":RemoveMatch " + id);
 }
 
 void Match::disconnect(Connection connection) {
@@ -233,14 +234,14 @@ void Match::sendBoard() {
 	sendBoth(":Board " + encoded);
 }
 
-websocketpp::connection_hdl Match::getWhite() const {
+Connection Match::getWhite() const {
 	return hostColor == Color::White? *host : *guest;
 }
 
-websocketpp::connection_hdl Match::getBlack() const {
+Connection Match::getBlack() const {
 	return hostColor == Color::Black? *host : *guest;
 }
 
-websocketpp::connection_hdl Match::get(Color color) const {
+Connection Match::get(Color color) const {
 	return color == Color::White? getWhite() : getBlack();
 }

@@ -76,7 +76,7 @@ class Chessboard {
 
 	renderTo(j) {
 		j.html("");
-		this.table = $("<table></table>").appendTo(j);
+		this.table = $(`<table id="board"></table>`).appendTo(j);
 		let tbody = $("<tbody></tbody>").appendTo(this.table);
 		for (let row = 0; row < 8; ++row) {
 			let tr = $("<tr></tr>").appendTo(tbody);
