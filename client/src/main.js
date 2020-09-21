@@ -32,8 +32,6 @@ function connect() {
 			return;
 		}
 
-		console.log(ev.data);
-
 		const split = ev.data.split(" ");
 		const verb = split[0].substr(1);
 		const rest = split.slice(1).join(" ");

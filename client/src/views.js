@@ -28,6 +28,7 @@ function renderJoin(j) {
 	});
 
 	renderMatchTable($(`<table id="matches"></table>`).appendTo(j));
+	$("#matchID").focus();
 	state.view = "join";
 }
 
