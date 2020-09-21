@@ -13,7 +13,7 @@ const state = {
 	started: false,
 	selected: null,
 	over: false,
-	column: null,
+	columns: [],
 	spectator: false,
 	matches: [],
 };
@@ -52,29 +52,27 @@ function connect() {
 			return;
 		}
 
-		if (verb == "Column") {
-			state.column = parseInt(rest);
-			$("td.square").removeClass(["active-column", "left-column", "right-column"]);
-			$(`.col${rest}`).addClass("active-column");
-			if (state.column != 0)
-				$(`.col${state.column - 1}`).addClass("left-column");
-			if (state.column != 7)
-				$(`.col${state.column + 1}`).addClass("right-column");
+		if (verb == "Columns") {
+			state.columns = rest.split(" ").map(x => parseInt(x));
+			$("td.square").removeClass("active-column");
+			if (state.columns.length < 8)
+				for (const column of state.columns)
+					$(`.col${column}`).addClass("active-column");
 			return;
 		}
 
-		if (verb == "Board") {
+		if (verb == "Board") { // :Board <encoded>
 			state.board.updatePieces(rest);
 			return;
 		}
 
-		if (verb == "Start") {
+		if (verb == "Start") { // :Start
 			state.started = true;
 			$("#status").text("Connected.");
 			return;
 		}
 
-		if (verb == "Error") {
+		if (verb == "Error") { // :Error <text...>
 			$("#error").addClass("visible").text(rest);
 			setTimeout(() => $("#error").removeClass("visible"), 2000);
 			return;

@@ -6,17 +6,25 @@
 #include "main.h"
 #include "piece/all.h"
 
-Match::Match(const std::string &id_, bool hidden_, Connection host_, Color host_color):
-id(id_), hidden(hidden_), host(host_), hostColor(host_color) {
+Match::Match(const std::string &id_, bool hidden_, int column_count, Connection host_, Color host_color):
+id(id_), hidden(hidden_), columnCount(column_count), host(host_), hostColor(host_color) {
 	board.placePieces();
 }
 
 void Match::roll() {
-	column = ((rand() % 6 + 1) + (rand() % 6 + 1));
-	if (8 < column)
-		column -= 8;
-	--column;
-	sendAll(":Column " + std::to_string(column));
+	columns.clear();
+	for (int i = 0; i < columnCount; ++i) {
+		int column;
+		do {
+			column = ((rand() % 6 + 1) + (rand() % 6 + 1));
+			if (8 < column)
+				column -= 8;
+			--column;
+		} while (columns.count(column) != 0);
+		columns.insert(column);
+	}
+
+	sendAll(columnMessage());
 }
 
 void Match::end(Connection *winner) {
@@ -74,31 +82,31 @@ bool Match::hasBoth() const {
 
 void Match::makeMove(Connection connection, Square from, Square to) {
 	if (!hasBoth())
-		throw ChessError("Match is missing a participant");
+		throw ChessError("Match is missing a participant.");
 
 	if (winner.has_value())
-		throw ChessError("Match already over");
+		throw ChessError("Match already over.");
 	
 	const void *address = connection.lock().get();
 	if (address != host->lock().get() && address != guest->lock().get())
-		throw ChessError("Invalid connection");
+		throw ChessError("Invalid connection.");
 
 	const bool isHostTurn = currentTurn == hostColor;
 	if ((address == host->lock().get() && !isHostTurn) || (address == guest->lock().get() && isHostTurn))
-		throw ChessError("Invalid turn");
+		throw ChessError("Invalid turn.");
 
 	std::shared_ptr<Piece> from_piece = board.at(from);
 	if (!from_piece)
-		throw ChessError("No source piece");
+		throw ChessError("No source piece.");
 
 	if (from_piece->color != currentTurn)
-		throw ChessError("Not your piece");
+		throw ChessError("Not your piece.");
 
 	if (from == to)
-		throw ChessError("Move must actually move a piece");
+		throw ChessError("Move must actually move a piece.");
 
-	if (from.column != column)
-		throw ChessError("Incorrect column");
+	if (columns.count(from.column) == 0)
+		throw ChessError("Incorrect column.");
 
 	bool can_move = false;
 	for (const Square &possibility: from_piece->canMoveTo()) {
@@ -109,12 +117,12 @@ void Match::makeMove(Connection connection, Square from, Square to) {
 	}
 
 	if (!can_move)
-		throw ChessError("Invalid move");
+		throw ChessError("Invalid move.");
 
 	std::shared_ptr<Piece> to_piece = board.at(to);
 	if (to_piece) {
 		if (to_piece->color == currentTurn)
-			throw ChessError("Can't capture own piece");
+			throw ChessError("Can't capture one of your own pieces.");
 		sendCaptured(*host, to_piece);
 		sendCaptured(*guest, to_piece);
 		for (Connection spectator: spectators)
@@ -167,27 +175,29 @@ void Match::checkPawns() {
 
 bool Match::canMove() {
 	std::cout << board << "\n";
-	std::cout << "Scanning column \e[1m" << column << "\e[22m for pieces.\n";
-	for (int row = 0; row < 8; ++row) {
-		std::shared_ptr<Piece> piece = board.at(row, column);
-		if (piece) {
-			std::cout << "\e[2m-\e[22m Found a piece at " << row << column << ": " << *piece << "\n";
-			if (piece->color == currentTurn) {
-				std::cout << "\e[2m--\e[22m Correct color.\n";
-				std::cout << "\e[2m---\e[22m Moves:";
-				for (const Square &move: piece->canMoveTo())
-					std::cout << " " << move;
-				std::cout << "\n";
-				if (piece->canMoveTo().empty())
-					std::cout << "\e[2m---\e[22m No moves.\n";
-				else {
-					std::cout << "\e[2;32m---\e[22m A move was found.\e[0m\n";
-					return true;
-				}
-			} else std::cout << "\e[2m--\e[22m Incorrect color.\n";
-		} else std::cout << "\e[2m-\e[22m No piece at " << row << column << ".\n";
-		// if (piece && piece->color == currentTurn && !piece->canMoveTo().empty())
-		// 	return true;
+	for (const int column: columns) {
+		std::cout << "Scanning column \e[1m" << column << "\e[22m for pieces.\n";
+		for (int row = 0; row < 8; ++row) {
+			std::shared_ptr<Piece> piece = board.at(row, column);
+			if (piece) {
+				std::cout << "\e[2m-\e[22m Found a piece at " << row << column << ": " << *piece << "\n";
+				if (piece->color == currentTurn) {
+					std::cout << "\e[2m--\e[22m Correct color.\n";
+					std::cout << "\e[2m---\e[22m Moves:";
+					for (const Square &move: piece->canMoveTo())
+						std::cout << " " << move;
+					std::cout << "\n";
+					if (piece->canMoveTo().empty())
+						std::cout << "\e[2m---\e[22m No moves.\n";
+					else {
+						std::cout << "\e[2;32m---\e[22m A move was found.\e[0m\n";
+						return true;
+					}
+				} else std::cout << "\e[2m--\e[22m Incorrect color.\n";
+			} else std::cout << "\e[2m-\e[22m No piece at " << row << column << ".\n";
+			// if (piece && piece->color == currentTurn && !piece->canMoveTo().empty())
+			// 	return true;
+		}
 	}
 
 	std::cout << "\e[31mNo moves were found.\e[0m\n";
@@ -264,6 +274,13 @@ void Match::sendBoard() {
 	}
 
 	sendAll(":Board " + encoded);
+}
+
+std::string Match::columnMessage() {
+	std::string message = ":Columns";
+	for (const int column: columns)
+		message += " " + std::to_string(column);
+	return message;
 }
 
 Connection Match::getWhite() const {

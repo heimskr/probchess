@@ -1,7 +1,9 @@
 #ifndef CHESS_MATCH_H_
 #define CHESS_MATCH_H_
 
+#include <list>
 #include <optional>
+#include <set>
 
 #include "WebSocket.h"
 #include "Board.h"
@@ -16,12 +18,13 @@ class Match {
 		Color hostColor;
 		Board board;
 		std::optional<Color> winner;
-		int column = -1;
+		int columnCount;
+		std::set<int> columns;
 		bool started = false;
 		std::list<std::shared_ptr<Piece>> captured;
 		std::list<Connection> spectators;
 
-		Match(const std::string &id_, bool hidden_, Connection host_, Color host_color);
+		Match(const std::string &id_, bool hidden_, int column_count, Connection host_, Color host_color);
 
 		void roll();
 		void end(Connection *winner);
@@ -37,6 +40,7 @@ class Match {
 		void sendSpectators(const std::string &);
 		void sendCaptured(Connection, std::shared_ptr<Piece>);
 		void sendBoard();
+		std::string columnMessage();
 		Connection getWhite() const;
 		Connection getBlack() const;
 		Connection get(Color) const;

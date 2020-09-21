@@ -48,6 +48,10 @@ main > * {
 	padding: 10px;
 }
 
+#joinForm select {
+	margin-top: 5px;
+}
+
 #matches td {
 	width: 0;
 }
@@ -162,27 +166,6 @@ label {
 #board td.active-column.white {
 	background: #bbb;
 }
-
-/* #board:not(.inverted) tr:first-child td.active-column, #board.inverted tr:last-child td.active-column {
-	border-top: 2px solid #a0a;
-}
-
-#board:not(.inverted) tr:last-child td.active-column, #board.inverted tr:first-child td.active-column {
-	border-bottom: 2px solid #a0a;
-}
-
-#board td.active-column {
-	border-left: 1px solid #a0a;
-	border-right: 1px solid #a0a;
-}
-
-#board:not(.inverted) td.left-column, #board.inverted td.right-column {
-	border-right: 1px solid #a0a;
-}
-
-#board:not(.inverted) td.right-column, #board.inverted td.left-column {
-	border-left: 1px solid #a0a;
-} */
 
 #board td.black.last-move {
 	background: #600;

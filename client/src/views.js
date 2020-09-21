@@ -5,6 +5,9 @@ function renderJoin(j) {
 	const div1 = $("<div></div>").appendTo(form);
 	const idLabel = $(`<label for="matchID">Match ID:</label>`).appendTo(div1);
 	const matchID = $(`<input type="text" autocomplete="off" id="matchID" />`).appendTo(div1);
+	const div2 = $("<div></div>").appendTo(form);
+	const select = $(`<select id="columnCount"></select>`).appendTo(div2);
+	for (let i = 1; i <= 8; ++i) select.append($(`<option value="${i}">${i} column${i == 1? "" : "s"}</option>`));
 	const checkTable = $("<table></table>").appendTo(form);
 	const whiteRow = $("<tr></tr>").appendTo(checkTable);
 	const whiteCheck = $(`<input type="checkbox" checked id="startWhite" />`).appendTo($("<td></td>").appendTo(whiteRow));
@@ -12,8 +15,8 @@ function renderJoin(j) {
 	const hiddenRow = $("<tr></tr>").appendTo(checkTable);
 	const hiddenCheck = $(`<input type="checkbox" id="hidden" />`).appendTo($("<td></td>").appendTo(hiddenRow));
 	const hiddenLabel = $(`<label for="hidden">Hidden</label>`).appendTo($("<td></td>").appendTo(hiddenRow));
-	const div2 = $("<div></div>").appendTo(form);
-	const joinButton = $(`<button id="join">Join or Create</button>`).appendTo(div2);
+	const div3 = $("<div></div>").appendTo(form);
+	const joinButton = $(`<button id="join">Join or Create</button>`).appendTo(div3);
 
 	send(":GetMatches");
 
@@ -21,7 +24,7 @@ function renderJoin(j) {
 	matchID.on("submit", ev => ev.preventDefault());
 	joinButton.on("click", () => {
 		if (matchID.val())
-			ws.send(`:CreateOrJoin ${matchID.val()} ${whiteCheck.is(":checked")? "white" : "black"} ${hiddenCheck.is(":checked")? "hidden" : "public"}`);
+			ws.send(`:CreateOrJoin ${matchID.val()} ${select.val()} ${whiteCheck.is(":checked")? "white" : "black"} ${hiddenCheck.is(":checked")? "hidden" : "public"}`);
 	});
 
 	renderMatchTable($(`<table id="matches"></table>`).appendTo(j));
@@ -60,7 +63,7 @@ function renderBoard(board, j) {
 		if (state.selected === null) {
 			const square = new Square(row, col);
 			const pair = board.at(square);
-			if (!pair || pair[1] != state.color || col != state.column)
+			if (!pair || pair[1] != state.color || state.columns.indexOf(col) == -1)
 			return;
 			state.selected = square;
 			cell.addClass("selected-piece");

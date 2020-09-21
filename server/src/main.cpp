@@ -79,27 +79,28 @@ void close_handler(Connection hdl) {
 void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	const std::string &msg = msg_ptr->get_payload();
 	if (msg.empty() || msg[0] != ':') {
-		send(hdl, ":Error Invalid message");
+		send(hdl, ":Error Invalid message.");
 		return;
 	}
 
 	const std::vector<std::string> words = split(msg.substr(1), " ");
 	const std::string &verb = words[0];
 
-	if (verb == "Create") { // :Create <id> [color] [hidden]
-		if ((words.size() < 2 && 4 < words.size()) || words[1].empty()) {
-			send(hdl, ":Error Invalid message");
+	if (verb == "Create") { // :Create <id> <column-count> [color] [hidden]
+		if ((words.size() < 2 && 5 < words.size()) || words[1].empty() || words[2].size() != 1) {
+			send(hdl, ":Error Invalid message.");
 			return;
 		}
 
-		createMatch(hdl, words[1], 3 <= words.size() && words[2] == "black"? Color::Black : Color::White,
-		                           4 <= words.size() && words[3] == "hidden");
+		createMatch(hdl, words[1], words[2][0] - '0',
+			4 <= words.size() && words[3] == "black"? Color::Black : Color::White,
+			5 <= words.size() && words[4] == "hidden");
 		return;
 	}
 
 	if (verb == "Join") { // :Join <id>
 		if (words.size() != 2 || words[1].empty()) {
-			send(hdl, ":Error Invalid message");
+			send(hdl, ":Error Invalid message.");
 			return;
 		}
 
@@ -109,7 +110,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 
 	if (verb == "Spectate") { // :Spectate <id>
 		if (words.size() != 2 || words[1].empty()) {
-			send(hdl, ":Error Invalid message");
+			send(hdl, ":Error Invalid message.");
 			return;
 		}
 
@@ -117,34 +118,35 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
-	if (verb == "CreateOrJoin") { // :CreateOrJoin <id> [color] [hidden]
-		if ((words.size() < 2 && 4 < words.size()) || words[1].empty()) {
-			send(hdl, ":Error Invalid message");
+	if (verb == "CreateOrJoin") { // :CreateOrJoin <id> <column-count> [color] [hidden]
+		if ((words.size() < 2 && 5 < words.size()) || words[1].empty() || words[2].size() != 1) {
+			send(hdl, ":Error Invalid message.");
 			return;
 		}
 
 		if (matchesByID.count(words[1]) > 0)
 			joinMatch(hdl, words[1], false);
 		else
-			createMatch(hdl, words[1], 3 <= words.size() && words[2] == "black"? Color::Black : Color::White,
-			                           4 <= words.size() && words[3] == "hidden");
+			createMatch(hdl, words[1], words[2][0] - '0',
+				4 <= words.size() && words[3] == "black"? Color::Black : Color::White,
+				5 <= words.size() && words[4] == "hidden");
 		return;
 	}
 
 	if (verb == "Move") { // :Move <from-square> <to-square>
 		if (words.size() != 3) {
-			send(hdl, ":Error Invalid message");
+			send(hdl, ":Error Invalid message.");
 			return;
 		}
 
 		for (const std::string &str: {words[1], words[2]})
 			if (str.size() != 2 || str.find_first_not_of("01234567") != std::string::npos) {
-				send(hdl, ":Error Invalid message");
+				send(hdl, ":Error Invalid message.");
 				return;
 			}
 
 		if (matchesByConnection.count(hdl.lock().get()) == 0) {
-			send(hdl, ":Error Not in a match");
+			send(hdl, ":Error Not in a match.");
 			return;
 		}
 
@@ -165,7 +167,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 
 	if (verb == "Show") { // :Show <column>
 		if (words.size() != 2 || words[1].size() != 2 || words[1].find_first_not_of("01234567") != std::string::npos) {
-			send(hdl, ":Error Invalid message");
+			send(hdl, ":Error Invalid message.");
 			return;
 		}
 
@@ -173,7 +175,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		try {
 			match = matchesByConnection.at(hdl.lock().get());
 		} catch (std::out_of_range &) {
-			send(hdl, ":Error Not in a match");
+			send(hdl, ":Error Not in a match.");
 			return;
 		}
 
@@ -196,23 +198,28 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	send(hdl, ":Error Unknown message type");
 }
 
-void createMatch(Connection hdl, const std::string &id, Color color, bool hidden) {
+void createMatch(Connection hdl, const std::string &id, int column_count, Color color, bool hidden) {
 	if (id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos) {
-		send(hdl, ":Error Invalid match ID");
+		send(hdl, ":Error Invalid match ID.");
+		return;
+	}
+
+	if (column_count < 1 || 8 < column_count) {
+		send(hdl, ":Error Invalid column count.");
 		return;
 	}
 
 	if (matchesByConnection.count(hdl.lock().get()) > 0) {
-		send(hdl, ":Error Already in a match");
+		send(hdl, ":Error Already in a match.");
 		return;
 	}
 
 	if (matchesByID.count(id) > 0) {
-		send(hdl, ":Error A match with that ID already exists");
+		send(hdl, ":Error A match with that ID already exists.");
 		return;
 	}
 
-	std::shared_ptr<Match> match = std::make_shared<Match>(id, hidden, hdl, color);
+	std::shared_ptr<Match> match = std::make_shared<Match>(id, hidden, column_count, hdl, color);
 	matchesByID.insert({id, match});
 	matchesByConnection.insert({hdl.lock().get(), match});
 	send(hdl, ":Joined " + id + " " + (color == Color::White? "white" : "black"));
@@ -223,19 +230,19 @@ void createMatch(Connection hdl, const std::string &id, Color color, bool hidden
 
 void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 	if (matchesByConnection.count(hdl.lock().get()) > 0) {
-		send(hdl, ":Error Already in a match");
+		send(hdl, ":Error Already in a match.");
 		return;
 	}
 
 	if (matchesByID.count(id) == 0) {
-		send(hdl, ":Error No match with that ID exists");
+		send(hdl, ":Error No match with that ID exists.");
 		return;
 	}
 
 	std::shared_ptr<Match> match = matchesByID.at(id);
 
 	if (!as_spectator && match->host.has_value() && match->guest.has_value()) {
-		send(hdl, ":Error Match is full");
+		send(hdl, ":Error Match is full.");
 		return;
 	}
 
@@ -277,7 +284,7 @@ void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 		match->started = true;
 		match->roll();
 	} else {
-		send(hdl, ":Column " + std::to_string(match->column));
+		send(hdl, match->columnMessage());
 		for (const std::shared_ptr<Piece> &piece: match->captured)
 			match->sendCaptured(hdl, piece);
 	}
