@@ -21,7 +21,7 @@ function renderJoin(j) {
 	matchID.on("submit", ev => ev.preventDefault());
 	joinButton.on("click", () => {
 		if (matchID.val())
-		ws.send(`:CreateOrJoin ${matchID.val()} ${whiteCheck.is(":checked")? "white" : "black"} ${hiddenCheck.is(":checked")? "hidden" : "public"}`);
+			ws.send(`:CreateOrJoin ${matchID.val()} ${whiteCheck.is(":checked")? "white" : "black"} ${hiddenCheck.is(":checked")? "hidden" : "public"}`);
 	});
 
 	renderMatchTable($(`<table id="matches"></table>`).appendTo(j));
@@ -34,7 +34,12 @@ function renderMatchTable(table) {
 		const open = state.matches[key] == "open";
 		const row = $("<tr></tr>").attr("id", "match-" + key).appendTo(table);
 		$("<button></button>").text(open? "Join" : "View").appendTo($("<td></td>").appendTo(row)).on("click", ev => {
-
+			if (open) {
+				send(`:Join ${key}`);
+			} else {
+				alert("Spectator mode is currently unimplemented.");
+				// send(`:View ${key}`);
+			}
 		});
 		$("<td></td>").text(key).appendTo(row);
 		$("<td></td>").text(open? "Open" : "Closed").css({color: open? "green" : "red"}).appendTo(row);

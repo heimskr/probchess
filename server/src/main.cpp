@@ -86,7 +86,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 	const std::vector<std::string> words = split(msg.substr(1), " ");
 	const std::string &verb = words[0];
 
-	if (verb == "Create") {
+	if (verb == "Create") { // :Create <id> [color] [hidden]
 		if ((words.size() < 2 && 4 < words.size()) || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
@@ -97,7 +97,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
-	if (verb == "Join") {
+	if (verb == "Join") { // :Join <id>
 		if (words.size() != 2 || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
@@ -107,7 +107,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
-	if (verb == "CreateOrJoin") {
+	if (verb == "CreateOrJoin") { // :CreateOrJoin <id> [color] [hidden]
 		if ((words.size() < 2 && 4 < words.size()) || words[1].empty()) {
 			send(hdl, ":Error Invalid message");
 			return;
@@ -121,7 +121,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
-	if (verb == "Move") {
+	if (verb == "Move") { // :Move <from-square> <to-square>
 		if (words.size() != 3) {
 			send(hdl, ":Error Invalid message");
 			return;
@@ -153,7 +153,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
-	if (verb == "Show") {
+	if (verb == "Show") { // :Show <column>
 		if (words.size() != 2 || words[1].size() != 2 || words[1].find_first_not_of("01234567") != std::string::npos) {
 			send(hdl, ":Error Invalid message");
 			return;
@@ -172,7 +172,7 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
-	if (verb == "GetMatches") {
+	if (verb == "GetMatches") { // :GetMatches
 		send(hdl, ":ClearMatches");
 		for (const std::pair<const std::string, std::shared_ptr<Match>> &pair: matchesByID) {
 			const std::shared_ptr<Match> match = pair.second;
