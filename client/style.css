@@ -1,6 +1,5 @@
 html {
 	cursor: url("cursor.png"), default;
-	background: red;
 	font-family: sans-serif;
 }
 
@@ -14,6 +13,7 @@ main {
 	text-align: center;
 	width: 100%;
 	height: 100%;
+	overflow: auto;
 }
 
 main > * {
@@ -35,12 +35,16 @@ main > * {
 #joinForm, #matches {
 	background: white;
 	border: 2px solid gray;
+	padding: 10px;
+}
+
+#matches {
+	min-width: 250px;
 }
 
 #joinForm {
 	background: white;
 	display: inline-block;
-	padding: 10px;
 	margin-top: 20px;
 }
 

@@ -206,7 +206,9 @@ void createMatch(Connection hdl, const std::string &id, Color color, bool hidden
 	matchesByID.insert({id, match});
 	matchesByConnection.insert({hdl.lock().get(), match});
 	send(hdl, ":Joined " + id + " " + (color == Color::White? "white" : "black"));
-	std::cout << "Client created match \e[32m" << id << "\e[39m.\n";
+	std::cout << "Client created " << (match->hidden? "hidden " : "") << "match \e[32m" << id << "\e[39m.\n";
+	if (!match->hidden)
+		broadcast(":Match " + match->id + " " + (match->hasBoth()? "closed" : "open"));
 }
 
 void joinMatch(Connection hdl, const std::string &id) {

@@ -34,7 +34,8 @@ void Match::end(Connection *winner) {
 		matchesByConnection.erase(host->lock().get());
 	if (guest.has_value())
 		matchesByConnection.erase(guest->lock().get());
-	broadcast(":RemoveMatch " + id);
+	if (!hidden)
+		broadcast(":RemoveMatch " + id);
 }
 
 void Match::disconnect(Connection connection) {
@@ -42,10 +43,12 @@ void Match::disconnect(Connection connection) {
 		host.reset();
 	else if (guest.has_value() && guest->lock().get() == connection.lock().get())
 		guest.reset();
+
 	if (!host.has_value() && !guest.has_value()) {
 		std::cout << "Ending match \e[31m" << id << "\e[39m: all clients disconnected.\n";
 		end(nullptr);
-	}
+	} else if (!hidden)
+		broadcast(":Match " + id + " open");
 }
 
 bool Match::hasBoth() const {
