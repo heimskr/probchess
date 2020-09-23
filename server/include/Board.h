@@ -12,6 +12,7 @@ class Board {
 	public:
 		std::array<std::array<std::shared_ptr<Piece>, 8>, 8> pieces;
 		std::list<std::shared_ptr<Piece>> whitePieces, blackPieces;
+		int width = 8, height = 8;
 
 		Board() {}
 

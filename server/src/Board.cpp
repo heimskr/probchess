@@ -6,7 +6,7 @@
 #include "piece/all.h"
 
 std::shared_ptr<Piece> Board::at(int row, int column) const {
-	if (row < 0 || 7 < row || column < 0 || 7 < column)
+	if (row < 0 || height <= row || column < 0 || width <= column)
 		return nullptr;
 	return pieces[row][column];
 }
@@ -16,8 +16,8 @@ std::shared_ptr<Piece> Board::at(Square square) const {
 }
 
 void Board::placePieces() {
-	for (int row = 0; row < 8; ++row)
-		for (int column = 0; column < 8; ++column)
+	for (int row = 0; row < height; ++row)
+		for (int column = 0; column < width; ++column)
 			pieces[row][column].reset();
 	
 	blackPieces.push_back(set<Rook>(Color::Black,   0, 0));
@@ -29,18 +29,18 @@ void Board::placePieces() {
 	blackPieces.push_back(set<Knight>(Color::Black, 0, 6));
 	blackPieces.push_back(set<Rook>(Color::Black,   0, 7));
 
-	whitePieces.push_back(set<Rook>(Color::White,   7, 0));
-	whitePieces.push_back(set<Knight>(Color::White, 7, 1));
-	whitePieces.push_back(set<Bishop>(Color::White, 7, 2));
-	whitePieces.push_back(set<Queen>(Color::White,  7, 3));
-	whitePieces.push_back(set<King>(Color::White,   7, 4));
-	whitePieces.push_back(set<Bishop>(Color::White, 7, 5));
-	whitePieces.push_back(set<Knight>(Color::White, 7, 6));
-	whitePieces.push_back(set<Rook>(Color::White,   7, 7));
+	whitePieces.push_back(set<Rook>(Color::White,   height - 1, 0));
+	whitePieces.push_back(set<Knight>(Color::White, height - 1, 1));
+	whitePieces.push_back(set<Bishop>(Color::White, height - 1, 2));
+	whitePieces.push_back(set<Queen>(Color::White,  height - 1, 3));
+	whitePieces.push_back(set<King>(Color::White,   height - 1, 4));
+	whitePieces.push_back(set<Bishop>(Color::White, height - 1, 5));
+	whitePieces.push_back(set<Knight>(Color::White, height - 1, 6));
+	whitePieces.push_back(set<Rook>(Color::White,   height - 1, 7));
 
-	for (int column = 0; column < 8; ++column) {
+	for (int column = 0; column < width; ++column) {
 		blackPieces.push_back(set<Pawn>(Color::Black, 1, column));
-		whitePieces.push_back(set<Pawn>(Color::White, 6, column));
+		whitePieces.push_back(set<Pawn>(Color::White, height - 2, column));
 	}
 }
 
@@ -88,11 +88,11 @@ std::string Board::toString(std::shared_ptr<Piece> show_moves) const {
 
 	std::stringstream out;
 
-	for (int row = 0; row < 8; ++row) {
-		for (int column = 0; column < 8; ++column)
+	for (int row = 0; row < height; ++row) {
+		for (int column = 0; column < width; ++column)
 			out << bg(row, column) << row << column << "   \e[0m";
 		out << "\n";
-		for (int column = 0; column < 8; ++column) {
+		for (int column = 0; column < width; ++column) {
 			std::shared_ptr<Piece> piece = at(row, column);
 			out << bg(row, column) << "  ";
 			if (piece)
@@ -102,7 +102,7 @@ std::string Board::toString(std::shared_ptr<Piece> show_moves) const {
 			out << "  \e[0m";
 		}
 		out << "\n";
-		for (int column = 0; column < 8; ++column)
+		for (int column = 0; column < width; ++column)
 			out << bg(row, column) << "     \e[0m";
 		out << "\n";
 	}

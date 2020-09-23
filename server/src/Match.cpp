@@ -6,8 +6,8 @@
 #include "main.h"
 #include "piece/all.h"
 
-Match::Match(const std::string &id_, bool hidden_, int column_count, Connection host_, Color host_color):
-id(id_), hidden(hidden_), columnCount(column_count), host(host_), hostColor(host_color) {
+Match::Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Connection host_, Color host_color):
+id(id_), hidden(hidden_), noSkip(no_skip), host(host_), hostColor(host_color), columnCount(column_count) {
 	board.placePieces();
 }
 
@@ -16,9 +16,11 @@ void Match::roll() {
 	for (int i = 0; i < columnCount; ++i) {
 		int column;
 		do {
-			column = ((rand() % 6 + 1) + (rand() % 6 + 1));
-			if (8 < column)
-				column -= 8;
+			column = 0;
+			for (int i = 0; i < board.width; i += 6)
+				column += rand() % 6 + 1;
+			while (board.width < column)
+				column -= board.width;
 			--column;
 		} while (columns.count(column) != 0);
 		columns.insert(column);
@@ -143,41 +145,48 @@ void Match::makeMove(Connection connection, Square from, Square to) {
 	checkPawns();
 	sendBoard();
 	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
-	while (true) {
+
+	if (noSkip) {
 		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
-		const std::string turn_str = currentTurn == Color::White? "white" : "black";
-		sendAll(":Turn " + turn_str);
-		roll();
-		if (!canMove()) {
-			sendAll(":Skip");
-		} else break;
+		sendAll(":Turn " + colorName(currentTurn));
+		do roll(); while (!canMove());
+	} else {
+		while (true) {
+			currentTurn = currentTurn == Color::White? Color::Black : Color::White;
+			sendAll(":Turn " + colorName(currentTurn));
+			roll();
+			if (!canMove()) {
+				sendAll(":Skip");
+			} else break;
+		}
 	}
+
 	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
 }
 
 void Match::checkPawns() {
-	for (int col = 0; col < 8; ++col) {
-		std::shared_ptr<Piece> piece = board.at(0, col);
+	for (int column = 0; column < board.width; ++column) {
+		std::shared_ptr<Piece> piece = board.at(0, column);
 		if (piece && dynamic_cast<Pawn *>(piece.get()) && piece->color == Color::White) {
 			board.erase(piece);
-			board.whitePieces.push_back(board.set<Queen>(Color::White, 0, col));
+			board.whitePieces.push_back(board.set<Queen>(Color::White, 0, column));
 		}
 	}
 
-	for (int col = 0; col < 8; ++col) {
-		std::shared_ptr<Piece> piece = board.at(7, col);
+	for (int column = 0; column < board.width; ++column) {
+		std::shared_ptr<Piece> piece = board.at(board.height - 1, column);
 		if (piece && dynamic_cast<Pawn *>(piece.get()) && piece->color == Color::Black) {
 			board.erase(piece);
-			board.blackPieces.push_back(board.set<Queen>(Color::Black, 7, col));
+			board.blackPieces.push_back(board.set<Queen>(Color::Black, board.height - 1, column));
 		}
 	}
 }
 
-bool Match::canMove() {
+bool Match::canMove() const {
 	std::cout << board << "\n";
 	for (const int column: columns) {
 		std::cout << "Scanning column \e[1m" << column << "\e[22m for pieces.\n";
-		for (int row = 0; row < 8; ++row) {
+		for (int row = 0; row < board.height; ++row) {
 			std::shared_ptr<Piece> piece = board.at(row, column);
 			if (piece) {
 				std::cout << "\e[2m-\e[22m Found a piece at " << row << column << ": " << *piece << "\n";
@@ -201,6 +210,16 @@ bool Match::canMove() {
 	}
 
 	std::cout << "\e[31mNo moves were found.\e[0m\n";
+	return false;
+}
+
+bool Match::anyCanMove() const {
+	for (int column = 0; column < board.width; ++column)
+		for (int row = 0; row < board.height; ++row) {
+			std::shared_ptr<Piece> piece = board.at(row, column);
+			if (piece && piece->color == currentTurn && !piece->canMoveTo().empty())
+				return true;
+		}
 	return false;
 }
 
@@ -245,9 +264,9 @@ void Match::sendCaptured(Connection connection, std::shared_ptr<Piece> piece) {
 
 void Match::sendBoard() {
 	std::string encoded;
-	for (int row = 0; row < 8; ++row) {
-		for (int col = 0; col < 8; ++col) {
-			std::shared_ptr<Piece> piece = board.at(row, col);
+	for (int row = 0; row < board.height; ++row) {
+		for (int column = 0; column < board.width; ++column) {
+			std::shared_ptr<Piece> piece = board.at(row, column);
 			if (!piece) {
 				encoded += "__";
 			} else {
@@ -265,7 +284,7 @@ void Match::sendBoard() {
 					encoded += "r";
 				} else {
 					throw std::runtime_error("Invalid piece at row " + std::to_string(row) + ", column " +
-						std::to_string(col));
+						std::to_string(column));
 				}
 
 				encoded += piece->color == Color::White? "W" : "B";
@@ -283,14 +302,14 @@ std::string Match::columnMessage() {
 	return message;
 }
 
-Connection Match::getWhite() const {
+Connection & Match::getWhite() {
 	return hostColor == Color::White? *host : *guest;
 }
 
-Connection Match::getBlack() const {
+Connection & Match::getBlack() {
 	return hostColor == Color::Black? *host : *guest;
 }
 
-Connection Match::get(Color color) const {
+Connection & Match::get(Color color) {
 	return color == Color::White? getWhite() : getBlack();
 }

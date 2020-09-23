@@ -11,7 +11,7 @@
 class Match {
 	public:
 		const std::string id;
-		bool hidden;
+		bool hidden, noSkip;
 		std::optional<Connection> host;
 		std::optional<Connection> guest;
 		Color currentTurn = Color::White;
@@ -24,7 +24,7 @@ class Match {
 		std::list<std::shared_ptr<Piece>> captured;
 		std::list<Connection> spectators;
 
-		Match(const std::string &id_, bool hidden_, int column_count, Connection host_, Color host_color);
+		Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Connection host_, Color host_color);
 
 		void roll();
 		void end(Connection *winner);
@@ -32,7 +32,8 @@ class Match {
 		bool hasBoth() const;
 		void makeMove(Connection, Square from, Square to);
 		void checkPawns();
-		bool canMove();
+		bool canMove() const;
+		bool anyCanMove() const;
 		bool sendHost(const std::string &);
 		bool sendGuest(const std::string &);
 		void sendBoth(const std::string &);
@@ -41,9 +42,9 @@ class Match {
 		void sendCaptured(Connection, std::shared_ptr<Piece>);
 		void sendBoard();
 		std::string columnMessage();
-		Connection getWhite() const;
-		Connection getBlack() const;
-		Connection get(Color) const;
+		Connection & getWhite();
+		Connection & getBlack();
+		Connection & get(Color);
 };
 
 #endif

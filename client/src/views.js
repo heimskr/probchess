@@ -15,6 +15,9 @@ function renderJoin(j) {
 	const hiddenRow = $("<tr></tr>").appendTo(checkTable);
 	const hiddenCheck = $(`<input type="checkbox" id="hidden" />`).appendTo($("<td></td>").appendTo(hiddenRow));
 	const hiddenLabel = $(`<label for="hidden">Hidden</label>`).appendTo($("<td></td>").appendTo(hiddenRow));
+	const noskipRow = $("<tr></tr>").appendTo(checkTable);
+	const noskipCheck = $(`<input type="checkbox" id="noskip" />`).appendTo($("<td></td>").appendTo(noskipRow));
+	const noskipLabel = $(`<label for="noskip">Skipn't</label>`).appendTo($("<td></td>").appendTo(noskipRow));
 	const div3 = $("<div></div>").appendTo(form);
 	const joinButton = $(`<button id="join">Join or Create</button>`).appendTo(div3);
 
@@ -24,7 +27,8 @@ function renderJoin(j) {
 	matchID.on("submit", ev => ev.preventDefault());
 	joinButton.on("click", () => {
 		if (matchID.val())
-			ws.send(`:CreateOrJoin ${matchID.val()} ${select.val()} ${whiteCheck.is(":checked")? "white" : "black"} ${hiddenCheck.is(":checked")? "hidden" : "public"}`);
+			ws.send(`:CreateOrJoin ${matchID.val()} ${select.val()} ${whiteCheck.is(":checked")? "white" : "black"} ` +
+				`${hiddenCheck.is(":checked")? "hidden" : "public"} ${noskipCheck.is(":checked")? "noskip" : "skip"}`);
 	});
 
 	$(`<div id="rules"></div>`).appendTo(j).append($("<div></div>").html(`
