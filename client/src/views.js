@@ -27,6 +27,14 @@ function renderJoin(j) {
 			ws.send(`:CreateOrJoin ${matchID.val()} ${select.val()} ${whiteCheck.is(":checked")? "white" : "black"} ${hiddenCheck.is(":checked")? "hidden" : "public"}`);
 	});
 
+	$(`<div id="rules"></div>`).appendTo(j).append($("<div></div>").html(`
+		<h3>Rules</h3>
+		Probability chess is like normal chess, except you can move only from the column that's randomly selected for
+		you. When you're in check, you're not required to immediately get out of check. This is because you won't always
+		be given a chance to get yourself out of check. However, the other player won't necessarily be able to checkmate
+		you right away either.
+	`));
+
 	renderMatchTable($(`<table id="matches"></table>`).appendTo(j));
 	$("#matchID").focus();
 	state.view = "join";

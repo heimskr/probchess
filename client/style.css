@@ -32,9 +32,26 @@ main > * {
 	display: none;
 }
 
-#joinForm, #matches {
+#joinForm, #matches, #rules > div {
 	background: white;
 	border: 2px solid gray;
+}
+
+#rules {
+	margin-top: 10px;
+	text-align: center;
+}
+
+#rules > div {
+	width: 50vw;
+	padding: 10px;
+	display: inline-block;
+	text-align: justify;
+}
+
+#rules h3 {
+	text-align: center;
+	margin: 5px auto;
 }
 
 #matches {
@@ -141,17 +158,11 @@ label {
 
 #board td.white-piece {
 	color: white;
+	text-shadow: 1px 1px 0px black, 1px -1px 0px black, -1px 1px 0px black, -1px -1px 0px black;
 }
 
 #board td.black-piece {
 	color: black;
-}
-
-#board td.white.white-piece {
-	text-shadow: 1px 1px 0px black, 1px -1px 0px black, -1px 1px 0px black, -1px -1px 0px black;
-}
-
-#board td.black.black-piece {
 	text-shadow: 1px 1px 0px white, 1px -1px 0px white, -1px 1px 0px white, -1px -1px 0px white;
 }
 
