@@ -2,6 +2,7 @@
 // https://sourceforge.net/p/tom7misc/svn/HEAD/tree/trunk/chess/
 
 #include "CCCPPlayer.h"
+#include "Match.h"
 
 bool CCCPPlayer::checkSuperior(const Move &check, const Move &alternative) const {
 
@@ -30,17 +31,17 @@ int CCCPPlayer::moveCode(const Move &move) const {
 	return (source * 64 + destination) * 8;
 }
 
-Move CCCPPlayer::chooseMove(const Board &board, const std::set<int> &columns) {
-	std::list<Move> all_legal_moves;
+Move CCCPPlayer::chooseMove(const Match &match, const std::set<int> &columns) {
+	const bool isBlack = match.currentTurn == Color::Black;
+	std::vector<LabeledMove> labeled_moves;
 
-	for (const int column: columns) {
-		for (int row = 0; row < board.height; ++row) {
-			std::shared_ptr<Piece> piece = board.at(row, column);
-			if (piece && piece->color == color) {
-				for (const Square &destination: piece->canMoveTo())
-					all_legal_moves.push_back({piece->square, destination});
-			}
-		}
+	std::list<Move> legal = match.board.allMoves(match.currentTurn);
+	legal.remove_if([&](const Move &move) {
+		return columns.count(move.from.column) == 0;
+	});
+
+	for (const Move &move: legal) {
+		LabeledMove labeled_move;
 	}
 
 

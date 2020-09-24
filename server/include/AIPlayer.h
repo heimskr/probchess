@@ -7,11 +7,13 @@
 #include "Move.h"
 #include "Player.h"
 
+class Match;
+
 struct AIPlayer: public Player {
 	using Player::Player;
 
 	void send(const std::string &) override;
-	virtual Move chooseMove(const Board &, const std::set<int> &columns) = 0;
+	virtual Move chooseMove(const Match &, const std::set<int> &columns) = 0;
 };
 
 #endif

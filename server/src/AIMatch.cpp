@@ -41,7 +41,7 @@ void AIMatch::afterMove() {
 
 	if (currentTurn != hostColor) {
 		try {
-			makeMove(**guest, dynamic_cast<AIPlayer *>(guest->get())->chooseMove(board, columns));
+			makeMove(**guest, dynamic_cast<AIPlayer *>(guest->get())->chooseMove(*this, columns));
 		} catch (std::exception &err) {
 			std::cerr << "AI couldn't make move: " << err.what() << "\n";
 			throw;

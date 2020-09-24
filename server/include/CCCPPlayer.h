@@ -13,6 +13,7 @@ class CCCPPlayer: public AIPlayer {
 		struct LabeledMove: public Move {
 			bool isCheckmate = false, isCheck = false;
 			std::optional<Square> captured;
+			LabeledMove(): Move({0, 0}, {0, 0}) {}
 			LabeledMove(const Move &move, bool is_checkmate, bool is_check):
 				Move(move), isCheckmate(is_checkmate), isCheck(is_check) {}
 			LabeledMove(const Move &move, bool is_checkmate, bool is_check, const Square &captured_):
@@ -28,7 +29,7 @@ class CCCPPlayer: public AIPlayer {
 	public:
 		using AIPlayer::AIPlayer;
 
-		Move chooseMove(const Board &, const std::set<int> &columns) override;
+		Move chooseMove(const Match &, const std::set<int> &columns) override;
 };
 
 #endif

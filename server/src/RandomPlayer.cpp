@@ -1,13 +1,14 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "Match.h"
 #include "RandomPlayer.h"
 
-Move RandomPlayer::chooseMove(const Board &board, const std::set<int> &columns) {
+Move RandomPlayer::chooseMove(const Match &match, const std::set<int> &columns) {
 	std::list<Move> possibilities;
 	for (const int column: columns) {
-		for (int row = 0; row < board.height; ++row) {
-			std::shared_ptr<Piece> piece = board.at(row, column);
+		for (int row = 0; row < match.board.height; ++row) {
+			std::shared_ptr<Piece> piece = match.board.at(row, column);
 			if (!piece || piece->color != color)
 				continue;
 			for (const Square &square: piece->canMoveTo())

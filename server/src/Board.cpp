@@ -98,6 +98,30 @@ bool Board::isCheckmated(Color color) {
 	return true;
 }
 
+std::list<Move> Board::allMoves() const {
+	std::list<Move> out;
+	for (int row = 0; row < height; ++row)
+		for (int column = 0; column < width; ++column) {
+			std::shared_ptr<Piece> piece = at(row, column);
+			if (piece)
+				for (const Square &to: piece->canMoveTo())
+					out.push_back({piece->square, to});
+		}
+	return out;
+}
+
+std::list<Move> Board::allMoves(Color color) const {
+	std::list<Move> out;
+	for (int row = 0; row < height; ++row)
+		for (int column = 0; column < width; ++column) {
+			std::shared_ptr<Piece> piece = at(row, column);
+			if (piece && piece->color == color)
+				for (const Square &to: piece->canMoveTo())
+					out.push_back({piece->square, to});
+		}
+	return out;
+}
+
 void Board::placePieces() {
 	for (int row = 0; row < height; ++row)
 		for (int column = 0; column < width; ++column)

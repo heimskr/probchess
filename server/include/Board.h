@@ -5,6 +5,7 @@
 #include <list>
 #include <memory>
 
+#include "Move.h"
 #include "piece/Piece.h"
 
 // Assumption: black starts at the top.
@@ -29,6 +30,8 @@ class Board {
 		/** Returns true if the given color's king is in check. */
 		bool isInCheck(Color);
 		bool isCheckmated(Color);
+		std::list<Move> allMoves() const;
+		std::list<Move> allMoves(Color) const;
 		void placePieces();
 		void erase(std::shared_ptr<Piece>);
 		void erase(int row, int column);

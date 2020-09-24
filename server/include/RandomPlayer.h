@@ -6,7 +6,7 @@
 struct RandomPlayer: public AIPlayer {
 	using AIPlayer::AIPlayer;
 
-	Move chooseMove(const Board &, const std::set<int> &columns) override;
+	Move chooseMove(const Match &, const std::set<int> &columns) override;
 };
 
 #endif
