@@ -6,8 +6,12 @@ function renderJoin(j) {
 	const idLabel = $(`<label for="matchID">Match ID:</label>`).appendTo(div1);
 	const matchID = $(`<input type="text" autocomplete="off" id="matchID" />`).appendTo(div1);
 	const div2 = $("<div></div>").appendTo(form);
-	const select = $(`<select id="columnCount"></select>`).appendTo(div2);
-	for (let i = 1; i <= 8; ++i) select.append($(`<option value="${i}">${i} column${i == 1? "" : "s"}</option>`));
+	const columnSelect = $(`<select id="columnCount"></select>`).appendTo(div2);
+	for (let i = 1; i <= 8; ++i) columnSelect.append($(`<option value="${i}">${i} column${i == 1? "" : "s"}</option>`));
+	const div3 = $("<div></div>").appendTo(form);
+	const typeSelect = $(`<select id="type"></select>`).appendTo(div3);
+	$(`<option value="human">Human vs. Human</option>`).appendTo(typeSelect);
+	$(`<option value="ai">Human vs. AI</option>`).appendTo(typeSelect);
 	const checkTable = $("<table></table>").appendTo(form);
 	const whiteRow = $("<tr></tr>").appendTo(checkTable);
 	const whiteCheck = $(`<input type="checkbox" checked id="startWhite" />`).appendTo($("<td></td>").appendTo(whiteRow));
@@ -18,8 +22,8 @@ function renderJoin(j) {
 	const noskipRow = $("<tr></tr>").appendTo(checkTable);
 	const noskipCheck = $(`<input type="checkbox" id="noskip" />`).appendTo($("<td></td>").appendTo(noskipRow));
 	const noskipLabel = $(`<label for="noskip">Skipn't</label>`).appendTo($("<td></td>").appendTo(noskipRow));
-	const div3 = $("<div></div>").appendTo(form);
-	const joinButton = $(`<button id="join">Join or Create</button>`).appendTo(div3);
+	const div4 = $("<div></div>").appendTo(form);
+	const joinButton = $(`<button id="join">Join or Create</button>`).appendTo(div4);
 
 	send(":GetMatches");
 
@@ -27,8 +31,9 @@ function renderJoin(j) {
 	matchID.on("submit", ev => ev.preventDefault());
 	joinButton.on("click", () => {
 		if (matchID.val())
-			ws.send(`:CreateOrJoin ${matchID.val()} ${select.val()} ${whiteCheck.is(":checked")? "white" : "black"} ` +
-				`${hiddenCheck.is(":checked")? "hidden" : "public"} ${noskipCheck.is(":checked")? "noskip" : "skip"}`);
+			ws.send(`:CreateOrJoin ${matchID.val()} ${columnSelect.val()} ${whiteCheck.is(":checked")? "white" : "black"} ` +
+				`${hiddenCheck.is(":checked")? "hidden" : "public"} ${noskipCheck.is(":checked")? "noskip" : "skip"} ` +
+				typeSelect.val());
 	});
 
 	$(`<div id="rules"></div>`).appendTo(j).append($("<div></div>").html(`
