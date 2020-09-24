@@ -10,18 +10,19 @@
 
 class CCCPPlayer: public AIPlayer {
 	private:
-		struct LabeledMove: public Move {
-			bool isCheckmate = false, isCheck = false;
-			std::optional<Square> captured;
-			LabeledMove(): Move({0, 0}, {0, 0}) {}
-			LabeledMove(const Move &move, bool is_checkmate, bool is_check):
-				Move(move), isCheckmate(is_checkmate), isCheck(is_check) {}
-			LabeledMove(const Move &move, bool is_checkmate, bool is_check, const Square &captured_):
-				Move(move), isCheckmate(is_checkmate), isCheck(is_check), captured(captured_) {}
+		struct LabeledMove {
+			Move move;
+			bool isCheckmated = false, isInCheck = false;
+			std::optional<std::shared_ptr<Piece>> captured;
+			LabeledMove(const Move &move_): move(move_) {}
+			LabeledMove(const Move &move_, bool is_checkmated, bool is_in_check):
+				move(move_), isCheckmated(is_checkmated), isInCheck(is_in_check) {}
+			LabeledMove(const Move &move_, bool is_checkmated, bool is_in_check, std::shared_ptr<Piece> captured_):
+				move(move_), isCheckmated(is_checkmated), isInCheck(is_in_check), captured(captured_) {}
 		};
 
 		/** Checks whether the second given move is better than the first given move. */
-		bool checkSuperior(const Move &check, const Move &alternative) const;
+		bool checkSuperior(Match &, const LabeledMove &check, const LabeledMove &alternative) const;
 		
 		int centerDistance(int column) const;
 		int moveCode(const Move &) const;
@@ -29,7 +30,7 @@ class CCCPPlayer: public AIPlayer {
 	public:
 		using AIPlayer::AIPlayer;
 
-		Move chooseMove(const Match &, const std::set<int> &columns) override;
+		Move chooseMove(Match &, const std::set<int> &columns) override;
 };
 
 #endif

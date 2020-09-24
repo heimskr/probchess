@@ -4,7 +4,7 @@
 #include "Match.h"
 #include "RandomPlayer.h"
 
-Move RandomPlayer::chooseMove(const Match &match, const std::set<int> &columns) {
+Move RandomPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 	std::list<Move> possibilities;
 	for (const int column: columns) {
 		for (int row = 0; row < match.board.height; ++row) {

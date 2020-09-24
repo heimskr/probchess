@@ -4,7 +4,7 @@
 #include "CCCPPlayer.h"
 #include "Match.h"
 
-bool CCCPPlayer::checkSuperior(const Move &check, const Move &alternative) const {
+bool CCCPPlayer::checkSuperior(Match &match, const LabeledMove &check, const LabeledMove &alternative) const {
 
 	return true;
 }
@@ -31,8 +31,8 @@ int CCCPPlayer::moveCode(const Move &move) const {
 	return (source * 64 + destination) * 8;
 }
 
-Move CCCPPlayer::chooseMove(const Match &match, const std::set<int> &columns) {
-	const bool isBlack = match.currentTurn == Color::Black;
+Move CCCPPlayer::chooseMove(Match &match, const std::set<int> &columns) {
+	const Color other_color = otherColor(match.currentTurn);
 	std::vector<LabeledMove> labeled_moves;
 
 	std::list<Move> legal = match.board.allMoves(match.currentTurn);
@@ -40,11 +40,31 @@ Move CCCPPlayer::chooseMove(const Match &match, const std::set<int> &columns) {
 		return columns.count(move.from.column) == 0;
 	});
 
+	const Board old_board = match.board;
+
 	for (const Move &move: legal) {
-		LabeledMove labeled_move;
+		LabeledMove labeled_move(move);
+
+		std::shared_ptr<Piece> piece = match.board.at(move.to);
+		if (piece)
+			labeled_move.captured = piece;
+
+		match.board.move(match.board.at(move.from), move.to);
+		labeled_move.isInCheck = match.board.isInCheck(other_color);
+		labeled_move.isCheckmated = match.board.isCheckmated(other_color);
+
+		match.board = old_board;
+		labeled_moves.push_back(labeled_move);
 	}
 
+	if (labeled_moves.empty())
+		throw std::runtime_error("No labeled moves found.");
 
+	LabeledMove *best = &labeled_moves.front();
+	for (auto iter = std::next(labeled_moves.begin(), 1), end = labeled_moves.end(); iter != end; ++iter) {
+		if (checkSuperior(match, *best, *iter))
+			best = &*iter;
+	}
 
-	return {{0, 0}, {0, 0}};
+	return best->move;
 }
