@@ -91,7 +91,10 @@ function connect() {
 		}
 
 		if (verb == "Win") {
-			$("#status").text("You win!");
+			if (state.spectator)
+				$("#status").text(`Winner: ${rest}`);
+			else
+				$("#status").text("You win!");
 			state.over = true;
 			return;
 		}
