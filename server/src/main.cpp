@@ -245,7 +245,7 @@ void createMatch(Connection hdl, const std::string &id, int column_count, Color 
 
 		match->started = true;
 		if (!match->anyCanMove())
-			match->end(&(match->board.whitePieces.empty()? match->getBlack() : match->getWhite()));
+			match->end(&(match->board.getPieces(Color::White).empty()? match->getBlack() : match->getWhite()));
 		do match->roll(); while (!match->canMove());
 
 		if (!match->hidden)
@@ -309,7 +309,7 @@ void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 	if (!as_spectator && !match->started) {
 		match->started = true;
 		if (!match->anyCanMove())
-			match->end(&(match->board.whitePieces.empty()? match->getBlack() : match->getWhite()));
+			match->end(&(match->board.getPieces(Color::White).empty()? match->getBlack() : match->getWhite()));
 		do match->roll(); while (!match->canMove());
 	} else {
 		send(hdl, match->columnMessage());

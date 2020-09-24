@@ -5,6 +5,31 @@
 #include "Board.h"
 #include "piece/all.h"
 
+Board::Board(const Board &other) {
+	width = other.width;
+	height = other.height;
+	for (int row = 0; row < height; ++row)
+		for (int column = 0; column < width; ++column) {
+			const std::shared_ptr<Piece> piece = other.at(row, column);
+			if (piece)
+				pieces[row][column] = std::shared_ptr<Piece>(piece->clone(this));
+		}
+}
+
+Board & Board::operator=(const Board &other) {
+	width = other.width;
+	height = other.height;
+	for (int row = 0; row < height; ++row)
+		for (int column = 0; column < width; ++column) {
+			const std::shared_ptr<Piece> piece = other.at(row, column);
+			if (piece)
+				pieces[row][column] = std::shared_ptr<Piece>(piece->clone(this));
+			else
+				pieces[row][column].reset();
+		}
+	return *this;
+}
+
 std::shared_ptr<Piece> Board::at(int row, int column) const {
 	if (row < 0 || height <= row || column < 0 || width <= column)
 		return nullptr;
@@ -15,42 +40,96 @@ std::shared_ptr<Piece> Board::at(Square square) const {
 	return at(square.row, square.column);
 }
 
+bool Board::isAttacked(Color color, const Square &square) {
+	std::shared_ptr<Piece> old_piece = at(square);
+	std::shared_ptr<Rook>  new_piece = std::make_shared<Rook>(this, otherColor(color), square);
+
+	pieces[square.row][square.column] = new_piece;
+
+	for (int row = 0; row < height; ++row)
+		for (int column = 0; column < width; ++column) {
+			std::shared_ptr<Piece> piece = at(row, column);
+			if (!piece || piece->color != color)
+				continue;
+			for (const Square &move: piece->canMoveTo())
+				if (move == square) {
+					pieces[square.row][square.column] = old_piece;
+					return true;
+				}
+		}
+
+	pieces[square.row][square.column] = old_piece;
+	return false;
+}
+
+std::shared_ptr<Piece> Board::findKing(Color color) const {
+	for (int row = 0; row < height; ++row) {
+		for (int column = 0; column < width; ++column) {
+			std::shared_ptr<Piece> piece = at(row, column);
+			if (piece && piece->color == color && piece->getType() == Piece::Type::King)
+				return piece;
+		}
+	}
+
+	throw std::runtime_error("Couldn't find " + colorName(color) + " king.");
+}
+
+bool Board::isInCheck(Color color) {
+	return isAttacked(color, findKing(color)->square);
+}
+
+bool Board::isCheckmated(Color color) {
+	std::shared_ptr<Piece> king = findKing(color);
+	if (!isAttacked(color, king->square))
+		return false;
+
+	const Board old_board = *this;
+	const Square old_square = king->square; 
+
+	for (const Square &square: king->canMoveTo()) {
+		move(king, square);
+		if (!isAttacked(color, king->square))
+			return false;
+
+		*this = old_board;
+		king->square = old_square;
+	}
+
+	return true;
+}
+
 void Board::placePieces() {
 	for (int row = 0; row < height; ++row)
 		for (int column = 0; column < width; ++column)
 			pieces[row][column].reset();
 	
-	blackPieces.push_back(set<Rook>(Color::Black,   0, 0));
-	blackPieces.push_back(set<Knight>(Color::Black, 0, 1));
-	blackPieces.push_back(set<Bishop>(Color::Black, 0, 2));
-	blackPieces.push_back(set<Queen>(Color::Black,  0, 3));
-	blackPieces.push_back(set<King>(Color::Black,   0, 4));
-	blackPieces.push_back(set<Bishop>(Color::Black, 0, 5));
-	blackPieces.push_back(set<Knight>(Color::Black, 0, 6));
-	blackPieces.push_back(set<Rook>(Color::Black,   0, 7));
+	set<Rook>(Color::Black,   0, 0);
+	set<Knight>(Color::Black, 0, 1);
+	set<Bishop>(Color::Black, 0, 2);
+	set<Queen>(Color::Black,  0, 3);
+	set<King>(Color::Black,   0, 4);
+	set<Bishop>(Color::Black, 0, 5);
+	set<Knight>(Color::Black, 0, 6);
+	set<Rook>(Color::Black,   0, 7);
 
-	whitePieces.push_back(set<Rook>(Color::White,   height - 1, 0));
-	whitePieces.push_back(set<Knight>(Color::White, height - 1, 1));
-	whitePieces.push_back(set<Bishop>(Color::White, height - 1, 2));
-	whitePieces.push_back(set<Queen>(Color::White,  height - 1, 3));
-	whitePieces.push_back(set<King>(Color::White,   height - 1, 4));
-	whitePieces.push_back(set<Bishop>(Color::White, height - 1, 5));
-	whitePieces.push_back(set<Knight>(Color::White, height - 1, 6));
-	whitePieces.push_back(set<Rook>(Color::White,   height - 1, 7));
+	set<Rook>(Color::White,   height - 1, 0);
+	set<Knight>(Color::White, height - 1, 1);
+	set<Bishop>(Color::White, height - 1, 2);
+	set<Queen>(Color::White,  height - 1, 3);
+	set<King>(Color::White,   height - 1, 4);
+	set<Bishop>(Color::White, height - 1, 5);
+	set<Knight>(Color::White, height - 1, 6);
+	set<Rook>(Color::White,   height - 1, 7);
 
 	for (int column = 0; column < width; ++column) {
-		blackPieces.push_back(set<Pawn>(Color::Black, 1, column));
-		whitePieces.push_back(set<Pawn>(Color::White, height - 2, column));
+		set<Pawn>(Color::Black, 1, column);
+		set<Pawn>(Color::White, height - 2, column);
 	}
 }
 
 void Board::erase(std::shared_ptr<Piece> piece) {
 	if (!piece)
 		return;
-	if (piece->color == Color::Black)
-		blackPieces.remove(piece);
-	else
-		whitePieces.remove(piece);
 	pieces[piece->square.row][piece->square.column].reset();
 }
 
@@ -70,6 +149,17 @@ bool Board::move(std::shared_ptr<Piece> piece, int new_row, int new_column) {
 
 bool Board::move(std::shared_ptr<Piece> piece, Square square) {
 	return move(piece, square.row, square.column);
+}
+
+std::list<std::shared_ptr<Piece>> Board::getPieces(Color color) const {
+	std::list<std::shared_ptr<Piece>> out;
+	for (int row = 0; row < height; ++row)
+		for (int column = 0; column < width; ++row) {
+			std::shared_ptr<Piece> piece = at(row, column);
+			if (piece && piece->color == color)
+				out.push_back(piece);
+		}
+	return out;
 }
 
 std::string Board::toString(std::shared_ptr<Piece> show_moves) const {

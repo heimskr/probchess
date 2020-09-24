@@ -15,6 +15,8 @@ class Piece {
 		std::list<Square> & filter(std::list<Square> &) const;
 
 	public:
+		enum class Type {Bishop, King, Knight, Pawn, Queen, Rook};
+
 		Board *parent;
 		Square square;
 		Color color;
@@ -27,6 +29,9 @@ class Piece {
 		virtual std::list<Square> canMoveTo() const = 0;
 		virtual std::string name() const = 0;
 		virtual std::string toString(Color) const = 0;
+		virtual Piece * clone(Board *) const = 0;
+		virtual Type getType() const = 0;
+		virtual int typeValue() const = 0;
 
 		operator std::string() const { return toString(color); }
 };
