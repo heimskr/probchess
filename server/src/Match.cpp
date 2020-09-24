@@ -32,14 +32,18 @@ void Match::roll() {
 
 void Match::end(Player *winner) {
 	try {
-		if (host.has_value() && winner->role == Player::Role::Host) {
-			sendHost(":Win");
-			sendGuest(":Lose");
-		} else if (guest.has_value() && winner->role == Player::Role::Guest) {
-			sendHost(":Lose");
-			sendGuest(":Win");
-		} else sendBoth(":End");
-		sendSpectators(":Win " + colorName(winner->role == Player::Role::Host? hostColor : otherColor(hostColor)));
+		if (!winner) {
+			sendAll(":End");
+		} else {
+			if (host.has_value() && winner->role == Player::Role::Host) {
+				sendHost(":Win");
+				sendGuest(":Lose");
+			} else if (guest.has_value() && winner->role == Player::Role::Guest) {
+				sendHost(":Lose");
+				sendGuest(":Win");
+			} else sendAll(":End");
+			sendSpectators(":Win " + colorName(winner->role == Player::Role::Host? hostColor : otherColor(hostColor)));
+		}
 	} catch (websocketpp::exception &) {}
 
 	matchesByID.erase(id);
