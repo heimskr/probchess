@@ -1,17 +1,12 @@
-#ifndef CHESS_RandomPLAYER_H_
-#define CHESS_RandomPLAYER_H_
+#ifndef CHESS_RANDOMPLAYER_H_
+#define CHESS_RANDOMPLAYER_H_
 
-#include <set>
+#include "AIPlayer.h"
 
-#include "Board.h"
-#include "Move.h"
-#include "Player.h"
+struct RandomPlayer: public AIPlayer {
+	using AIPlayer::AIPlayer;
 
-struct RandomPlayer: public Player {
-	using Player::Player;
-
-	void send(const std::string &) override;
-	Move chooseMove(const Board &, const std::set<int> &columns);
+	Move chooseMove(const Board &, const std::set<int> &columns) override;
 };
 
 #endif

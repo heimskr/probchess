@@ -3,11 +3,12 @@
 #include <signal.h>
 #include <time.h>
 
+#include "AIMatch.h"
 #include "Board.h"
 #include "ChessError.h"
 #include "HumanMatch.h"
 #include "HumanPlayer.h"
-#include "RandomMatch.h"
+#include "RandomPlayer.h"
 #include "Square.h"
 #include "Util.h"
 #include "WebSocket.h"
@@ -223,7 +224,7 @@ void createMatch(Connection hdl, const std::string &id, int column_count, Color 
 	if (type == "human") {
 		match = std::make_shared<HumanMatch>(id, hidden, noskip, column_count, color);
 	} else if (type == "random") {
-		match = std::make_shared<RandomMatch>(id, hidden, noskip, column_count, color);
+		match = AIMatch::create<RandomPlayer>(id, hidden, noskip, column_count, color);
 	} else {
 		send(hdl, ":Error Invalid match type.");
 		return;

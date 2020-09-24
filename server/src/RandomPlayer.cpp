@@ -2,9 +2,6 @@
 #include <iostream>
 
 #include "RandomPlayer.h"
-#include "Board.h"
-
-void RandomPlayer::send(const std::string &) {}
 
 Move RandomPlayer::chooseMove(const Board &board, const std::set<int> &columns) {
 	std::list<Move> possibilities;
