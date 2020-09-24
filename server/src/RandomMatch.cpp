@@ -1,17 +1,17 @@
-#include "AIMatch.h"
+#include "RandomMatch.h"
 #include "HumanPlayer.h"
 #include "main.h"
 
-AIMatch::AIMatch(const std::string &id_, bool hidden_, bool no_skip, int column_count, Color host_color):
+RandomMatch::RandomMatch(const std::string &id_, bool hidden_, bool no_skip, int column_count, Color host_color):
 Match(id_, hidden_, no_skip, column_count, host_color) {
-	guest = std::make_unique<AIPlayer>(otherColor(host_color), Player::Role::Guest);
+	guest = std::make_unique<RandomPlayer>(otherColor(host_color), Player::Role::Guest);
 }
 
-bool AIMatch::isActive() const {
+bool RandomMatch::isActive() const {
 	return host.has_value();
 }
 
-bool AIMatch::hasConnection(Connection connection) const {
+bool RandomMatch::hasConnection(Connection connection) const {
 	if (host.has_value())
 		if (HumanPlayer *human_host = dynamic_cast<HumanPlayer *>(host->get()))
 			if (human_host->connection.lock().get() == connection.lock().get())
@@ -19,11 +19,11 @@ bool AIMatch::hasConnection(Connection connection) const {
 	return false;
 }
 
-bool AIMatch::isReady() const {
+bool RandomMatch::isReady() const {
 	return host.has_value();
 }
 
-void AIMatch::afterMove() {
+void RandomMatch::afterMove() {
 	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
 
 	if (noSkip) {
@@ -45,9 +45,9 @@ void AIMatch::afterMove() {
 
 	if (currentTurn != hostColor) {
 		try {
-			makeMove(**guest, dynamic_cast<AIPlayer *>(guest->get())->chooseMove(board, columns));
+			makeMove(**guest, dynamic_cast<RandomPlayer *>(guest->get())->chooseMove(board, columns));
 		} catch (std::exception &err) {
-			std::cerr << "AI couldn't make move: " << err.what() << "\n";
+			std::cerr << "RandomBot couldn't make move: " << err.what() << "\n";
 			throw;
 		}
 	}

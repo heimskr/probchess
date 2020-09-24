@@ -1,5 +1,5 @@
-#ifndef CHESS_AIPLAYER_H_
-#define CHESS_AIPLAYER_H_
+#ifndef CHESS_RandomPLAYER_H_
+#define CHESS_RandomPLAYER_H_
 
 #include <set>
 
@@ -7,7 +7,7 @@
 #include "Move.h"
 #include "Player.h"
 
-struct AIPlayer: public Player {
+struct RandomPlayer: public Player {
 	using Player::Player;
 
 	void send(const std::string &) override;

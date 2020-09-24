@@ -11,7 +11,7 @@ function renderJoin(j) {
 	const div3 = $("<div></div>").appendTo(form);
 	const typeSelect = $(`<select id="type"></select>`).appendTo(div3);
 	$(`<option value="human">Human vs. Human</option>`).appendTo(typeSelect);
-	$(`<option value="ai">Human vs. AI</option>`).appendTo(typeSelect);
+	$(`<option value="random">Human vs. RandomBot</option>`).appendTo(typeSelect);
 	const checkTable = $("<table></table>").appendTo(form);
 	const whiteRow = $("<tr></tr>").appendTo(checkTable);
 	const whiteCheck = $(`<input type="checkbox" checked id="startWhite" />`).appendTo($("<td></td>").appendTo(whiteRow));

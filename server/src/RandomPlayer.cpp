@@ -1,12 +1,12 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "AIPlayer.h"
+#include "RandomPlayer.h"
 #include "Board.h"
 
-void AIPlayer::send(const std::string &) {}
+void RandomPlayer::send(const std::string &) {}
 
-Move AIPlayer::chooseMove(const Board &board, const std::set<int> &columns) {
+Move RandomPlayer::chooseMove(const Board &board, const std::set<int> &columns) {
 	std::list<Move> possibilities;
 	for (const int column: columns) {
 		for (int row = 0; row < board.height; ++row) {
@@ -19,7 +19,7 @@ Move AIPlayer::chooseMove(const Board &board, const std::set<int> &columns) {
 	}
 
 	if (possibilities.empty())
-		throw std::runtime_error("AI player has no moves to select from");
+		throw std::runtime_error("RandomBot has no moves to select from");
 
 	const int index = rand() % possibilities.size();
 	std::cout << "Choosing possibility \e[1m" << index << "\e[22m out of \e[1m" << possibilities.size() << "\e[22m.\n";
