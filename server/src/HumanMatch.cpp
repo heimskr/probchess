@@ -18,29 +18,11 @@ bool HumanMatch::hasConnection(Connection connection) const {
 	return false;
 }
 
-bool HumanMatch::hasBoth() const {
+bool HumanMatch::isReady() const {
 	return host.has_value() && guest.has_value();
 }
 
-bool HumanMatch::sendGuest(const std::string &message) {
-	if (guest.has_value()) {
-		(*guest)->send(message);
-		return true;
-	}
-
-	return false;
-}
-
-void HumanMatch::sendAll(const std::string &message) {
-	sendBoth(message);
-	sendSpectators(message);
-}
-
-bool HumanMatch::isReady() const {
-	return hasBoth();
-}
-
-void HumanMatch::afterMove(Player &player, Square from, Square to) {
+void HumanMatch::afterMove() {
 	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
 
 	if (noSkip) {

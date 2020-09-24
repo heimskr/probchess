@@ -74,7 +74,7 @@ void close_handler(Connection hdl) {
 	}
 
 	std::cerr << "Disconnecting client from match \e[33m" << match->id << "\e[39m.\n";
-	match->disconnect(match->getPlayer(hdl));
+	match->disconnect(hdl);
 	matchesByConnection.erase(hdl.lock().get());
 }
 
@@ -155,13 +155,12 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		Square to   {words[2][0] - '0', words[2][1] - '0'};
 
 		try {
-			match->makeMove(match->getPlayer(hdl), from, to);
+			match->makeMove(match->getPlayer(hdl), {from, to});
 		} catch (ChessError &err) {
 			send(hdl, ":Error " + std::string(err.what()));
 			return;
 		}
 
-		match->sendAll(":MoveMade " + words[1] + " " + words[2]);
 		return;
 	}
 
@@ -223,22 +222,36 @@ void createMatch(Connection hdl, const std::string &id, int column_count, Color 
 	std::shared_ptr<Match> match;
 	if (type == "human") {
 		match = std::make_shared<HumanMatch>(id, hidden, noskip, column_count, color);
-		match->host = std::make_unique<HumanPlayer>(Player::Role::Host, hdl);
 	} else if (type == "ai") {
-		send(hdl, ":Error AI matches are currently unimplemented.");
-		return;
-		// match = std::make_shared<AIMatch>(id, hidden, noskip, column_count, color);
+		// send(hdl, ":Error AI matches are currently unimplemented.");
+		// return;
+		match = std::make_shared<AIMatch>(id, hidden, noskip, column_count, color);
 	} else {
 		send(hdl, ":Error Invalid match type.");
 		return;
 	}
 
+	match->host = std::make_unique<HumanPlayer>(color, Player::Role::Host, hdl);
 	matchesByID.insert({id, match});
 	matchesByConnection.insert({hdl.lock().get(), match});
 	send(hdl, ":Joined " + id + " " + (color == Color::White? "white" : "black"));
 	std::cout << "Client created " << (match->hidden? "hidden " : "") << "match \e[32m" << id << "\e[39m.\n";
 	if (!match->hidden)
 		broadcast(":Match " + match->id + " " + (match->isReady()? "closed" : "open"));
+
+	if (match->isReady()) {
+		send(hdl, ":Start");
+		match->sendAll(":Turn " + colorName(match->currentTurn));
+		match->sendBoard();
+
+		match->started = true;
+		if (!match->anyCanMove())
+			match->end(&(match->board.whitePieces.empty()? match->getBlack() : match->getWhite()));
+		do match->roll(); while (!match->canMove());
+
+		if (!match->hidden)
+			broadcast(":Match " + match->id + " " + (match->isReady()? "closed" : "open"));
+	}
 }
 
 void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
@@ -265,7 +278,7 @@ void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 	else if (!match->host.has_value())
 		send(hdl, ":Joined " + id + " " + colorName(match->hostColor));
 	else
-		send(hdl, ":Joined " + id + " " + (match->hostColor == Color::White? "black" : "white"));
+		send(hdl, ":Joined " + id + " " + colorName(otherColor(match->hostColor)));
 
 	if (as_spectator) {
 		if (match->started)
@@ -278,18 +291,19 @@ void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 		match->spectators.push_back(hdl);
 		as = "spectator";
 	} else if (!match->host.has_value()) {
-		match->host = std::make_unique<HumanPlayer>(Player::Role::Host, hdl);
+		match->host = std::make_unique<HumanPlayer>(match->hostColor, Player::Role::Host, hdl);
 		as = "host";
 	} else if (!match->guest.has_value()) {
-		match->guest = std::make_unique<HumanPlayer>(Player::Role::Guest, hdl);
+		match->guest = std::make_unique<HumanPlayer>(otherColor(match->hostColor), Player::Role::Guest, hdl);
 		as = "guest";
 	}
 
 	if (!as_spectator)
 		send(hdl, ":Start");
 
+	std::cout << "Joining as " << as << ": match is " << (match->isReady()? "ready" : "not ready") << ".\n";
 	if (match->isReady())
-		match->sendAll(":Turn " + std::string(match->currentTurn == Color::White? "white" : "black"));
+		match->sendAll(":Turn " + colorName(match->currentTurn));
 
 	match->sendBoard();
 

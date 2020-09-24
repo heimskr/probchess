@@ -6,6 +6,7 @@
 #include <set>
 
 #include "Board.h"
+#include "Move.h"
 #include "Player.h"
 #include "WebSocket.h"
 
@@ -35,13 +36,13 @@ class Match {
 
 		void roll();
 		virtual void end(Player *winner);
-		virtual void disconnect(Player &);
+		virtual void disconnect(Connection);
 		Player & getPlayer(Connection);
 		virtual bool isActive() const = 0;
 		virtual bool hasConnection(Connection) const = 0;
 		Player & currentPlayer();
-		void makeMove(Player &, Square from, Square to);
-		virtual void afterMove(Player &, Square from, Square to) = 0;
+		void makeMove(Player &, const Move &);
+		virtual void afterMove() = 0;
 		void checkPawns();
 		bool canMove() const;
 		bool anyCanMove() const;
@@ -51,8 +52,9 @@ class Match {
 		virtual void sendAll(const std::string &);
 		virtual bool isReady() const = 0;
 		void sendSpectators(const std::string &);
-		std::string capturedMessage(std::shared_ptr<Piece>);
 		void sendBoard();
+		void invertTurn();
+		std::string capturedMessage(std::shared_ptr<Piece>);
 		std::string columnMessage();
 		Player & getWhite();
 		Player & getBlack();

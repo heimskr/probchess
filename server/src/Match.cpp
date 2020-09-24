@@ -63,12 +63,8 @@ void Match::end(Player *winner) {
 		broadcast(":RemoveMatch " + id);
 }
 
-void Match::disconnect(Player &player) {
-	HumanPlayer *human = dynamic_cast<HumanPlayer *>(&player);
-	if (!human)
-		return;
-
-	const void *vptr = human->connection.lock().get();
+void Match::disconnect(Connection connection) {
+	const void *vptr = connection.lock().get();
 
 	spectators.remove_if([&](Connection hdl) { return hdl.lock().get() == vptr; });
 
@@ -105,7 +101,7 @@ Player & Match::currentPlayer() {
 	return currentTurn == hostColor? **host : **guest;
 }
 
-void Match::makeMove(Player &player, Square from, Square to) {
+void Match::makeMove(Player &player, const Move &move) {
 	if (!isReady())
 		throw ChessError("Match is missing a participant.");
 
@@ -119,22 +115,22 @@ void Match::makeMove(Player &player, Square from, Square to) {
 	if (&player != &currentPlayer())
 		throw ChessError("Invalid turn.");
 
-	std::shared_ptr<Piece> from_piece = board.at(from);
+	std::shared_ptr<Piece> from_piece = board.at(move.from);
 	if (!from_piece)
 		throw ChessError("No source piece.");
 
 	if (from_piece->color != currentTurn)
 		throw ChessError("Not your piece.");
 
-	if (from == to)
+	if (move.from == move.to)
 		throw ChessError("Move must actually move a piece.");
 
-	if (columns.count(from.column) == 0)
+	if (columns.count(move.from.column) == 0)
 		throw ChessError("Incorrect column.");
 
 	bool can_move = false;
 	for (const Square &possibility: from_piece->canMoveTo()) {
-		if (possibility == to) {
+		if (possibility == move.to) {
 			can_move = true;
 			break;
 		}
@@ -143,7 +139,7 @@ void Match::makeMove(Player &player, Square from, Square to) {
 	if (!can_move)
 		throw ChessError("Invalid move.");
 
-	std::shared_ptr<Piece> to_piece = board.at(to);
+	std::shared_ptr<Piece> to_piece = board.at(move.to);
 	if (to_piece) {
 		if (to_piece->color == currentTurn)
 			throw ChessError("Can't capture one of your own pieces.");
@@ -151,7 +147,7 @@ void Match::makeMove(Player &player, Square from, Square to) {
 		captured.push_back(to_piece);
 		board.erase(to_piece);
 		if (dynamic_cast<King *>(to_piece.get())) {
-			board.move(from_piece, to);
+			board.move(from_piece, move.to);
 			checkPawns();
 			sendBoard();
 			winnerColor = currentTurn;
@@ -160,10 +156,11 @@ void Match::makeMove(Player &player, Square from, Square to) {
 		}
 	}
 
-	board.move(from_piece, to);
+	board.move(from_piece, move.to);
 	checkPawns();
 	sendBoard();
-	afterMove(player, from, to);
+	sendAll(":MoveMade " + std::string(move.from) + " " + std::string(move.to));
+	afterMove();
 }
 
 void Match::checkPawns() {
@@ -251,17 +248,13 @@ void Match::sendBoth(const std::string &message) {
 }
 
 void Match::sendAll(const std::string &message) {
-	sendHost(message);
+	sendBoth(message);
 	sendSpectators(message);
 }
 
 void Match::sendSpectators(const std::string &message) {
 	for (Connection spectator: spectators)
 		send(spectator, message);
-}
-
-std::string Match::capturedMessage(std::shared_ptr<Piece> piece) {
-	return ":Capture " + std::string(piece->square) + " " + piece->name() + " " + colorName(piece->color);
 }
 
 void Match::sendBoard() {
@@ -295,6 +288,14 @@ void Match::sendBoard() {
 	}
 
 	sendAll(":Board " + encoded);
+}
+
+void Match::invertTurn() {
+	currentTurn = currentTurn == Color::White? Color::Black : Color::White;
+}
+
+std::string Match::capturedMessage(std::shared_ptr<Piece> piece) {
+	return ":Capture " + std::string(piece->square) + " " + piece->name() + " " + colorName(piece->color);
 }
 
 std::string Match::columnMessage() {

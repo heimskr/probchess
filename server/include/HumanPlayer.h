@@ -7,7 +7,7 @@
 struct HumanPlayer: public Player {
 	Connection connection;
 
-	HumanPlayer(Role role_, Connection connection_);
+	HumanPlayer(Color color_, Role role_, Connection connection_);
 
 	void send(const std::string &) override;
 };
