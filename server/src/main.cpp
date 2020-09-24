@@ -273,8 +273,7 @@ void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 	if (!as_spectator)
 		send(hdl, ":Start");
 
-	if (match->hasBoth())
-		match->sendAll(":Turn " + std::string(match->currentTurn == Color::White? "white" : "black"));
+	sendTurn();
 
 	match->sendBoard();
 

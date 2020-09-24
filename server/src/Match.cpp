@@ -1,13 +1,14 @@
 #include <cstdlib>
 #include <unistd.h>
 
-#include "Match.h"
 #include "ChessError.h"
+#include "HumanPlayer.h"
+#include "Match.h"
 #include "main.h"
 #include "piece/all.h"
 
-Match::Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Connection host_, Color host_color):
-id(id_), hidden(hidden_), noSkip(no_skip), host(host_), hostColor(host_color), columnCount(column_count) {
+Match::Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Color host_color):
+id(id_), hidden(hidden_), noSkip(no_skip), hostColor(host_color), columnCount(column_count) {
 	board.placePieces();
 }
 
@@ -29,25 +30,12 @@ void Match::roll() {
 	sendAll(columnMessage());
 }
 
-void Match::end(Connection *winner) {
-	try {
-		if (host.has_value() && winner == &*host) {
-			sendHost(":Win");
-			sendGuest(":Lose");
-		} else if (guest.has_value() && winner == &*guest) {
-			sendHost(":Lose");
-			sendGuest(":Win");
-		} else sendBoth(":End");
-		sendSpectators(":Win " + colorName(winner == &*host? hostColor : otherColor(hostColor)));
-	} catch (websocketpp::exception &) {}
-
+void Match::end(Player *) {
 	matchesByID.erase(id);
 
 	if (host.has_value())
-		matchesByConnection.erase(host->lock().get());
-
-	if (guest.has_value())
-		matchesByConnection.erase(guest->lock().get());
+		if (HumanPlayer *human_host = dynamic_cast<HumanPlayer *>(host->get()))
+			matchesByConnection.erase(human_host->connection.lock().get());
 
 	for (Connection spectator: spectators)
 		matchesByConnection.erase(spectator.lock().get());
@@ -56,42 +44,37 @@ void Match::end(Connection *winner) {
 		broadcast(":RemoveMatch " + id);
 }
 
-void Match::disconnect(Connection connection) {
-	const void *vptr = connection.lock().get();
+void Match::disconnect(Player &player) {
+	HumanPlayer *human = dynamic_cast<HumanPlayer *>(&player);
+	if (!human)
+		return;
 
-	for (Connection spectator: spectators) {
-		if (spectator.lock().get() == vptr) {
-			spectators.remove_if([&](Connection hdl) { return hdl.lock().get() == vptr; });
-			return;
-		}
-	}
+	const void *vptr = human->connection.lock().get();
 
-	if (host.has_value() && host->lock().get() == vptr)
-		host.reset();
-	else if (guest.has_value() && guest->lock().get() == vptr)
-		guest.reset();
+	spectators.remove_if([&](Connection hdl) { return hdl.lock().get() == vptr; });
 
-	if (!host.has_value() && !guest.has_value()) {
-		std::cout << "Ending match \e[31m" << id << "\e[39m: all clients disconnected.\n";
+	if (host.has_value())
+		if (HumanPlayer *human_host = dynamic_cast<HumanPlayer *>(host->get()))
+			if (human_host->connection.lock().get() == vptr)
+				host.reset();
+
+	if (!isActive()) {
+		std::cout << "Ending match \e[31m" << id << "\e[39m: all players disconnected.\n";
 		end(nullptr);
 	} else if (!hidden)
 		broadcast(":Match " + id + " open");
 }
 
-bool Match::hasBoth() const {
-	return host.has_value() && guest.has_value();
-}
-
-void Match::makeMove(Connection connection, Square from, Square to) {
-	if (!hasBoth())
+void Match::makeMove(Player &player, Square from, Square to) {
+	if (!isReady())
 		throw ChessError("Match is missing a participant.");
 
 	if (winner.has_value())
 		throw ChessError("Match already over.");
-	
-	const void *address = connection.lock().get();
-	if (address != host->lock().get() && address != guest->lock().get())
-		throw ChessError("Invalid connection.");
+
+	if (HumanPlayer *human = dynamic_cast<HumanPlayer *>(&player))
+		if (!hasConnection(human->connection))
+			throw ChessError("Invalid connection.");
 
 	const bool isHostTurn = currentTurn == hostColor;
 	if ((address == host->lock().get() && !isHostTurn) || (address == guest->lock().get() && isHostTurn))
@@ -232,24 +215,8 @@ bool Match::sendHost(const std::string &message) {
 	return false;
 }
 
-bool Match::sendGuest(const std::string &message) {
-	if (guest.has_value()) {
-		send(*guest, message);
-		return true;
-	}
-
-	return false;
-}
-
-void Match::sendBoth(const std::string &message) {
-	if (host.has_value())
-		send(*host, message);
-	if (guest.has_value())
-		send(*guest, message);
-}
-
 void Match::sendAll(const std::string &message) {
-	sendBoth(message);
+	sendHost(message);
 	sendSpectators(message);
 }
 
@@ -300,16 +267,4 @@ std::string Match::columnMessage() {
 	for (const int column: columns)
 		message += " " + std::to_string(column);
 	return message;
-}
-
-Connection & Match::getWhite() {
-	return hostColor == Color::White? *host : *guest;
-}
-
-Connection & Match::getBlack() {
-	return hostColor == Color::Black? *host : *guest;
-}
-
-Connection & Match::get(Color color) {
-	return color == Color::White? getWhite() : getBlack();
 }

@@ -5,15 +5,15 @@
 #include <optional>
 #include <set>
 
-#include "WebSocket.h"
 #include "Board.h"
+#include "Player.h"
+#include "WebSocket.h"
 
 class Match {
 	public:
 		const std::string id;
 		bool hidden, noSkip;
-		std::optional<Connection> host;
-		std::optional<Connection> guest;
+		std::optional<std::unique_ptr<Player>> host;
 		Color currentTurn = Color::White;
 		Color hostColor;
 		Board board;
@@ -24,27 +24,27 @@ class Match {
 		std::list<std::shared_ptr<Piece>> captured;
 		std::list<Connection> spectators;
 
-		Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Connection host_, Color host_color);
+		Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Color host_color);
+
+		virtual ~Match() = 0;
 
 		void roll();
-		void end(Connection *winner);
-		void disconnect(Connection);
-		bool hasBoth() const;
-		void makeMove(Connection, Square from, Square to);
+		virtual void end(Player *winner);
+		virtual void disconnect(Player &) = 0;
+		virtual bool isActive() const = 0;
+		virtual bool hasConnection(Connection) const = 0;
+		virtual Player & currentPlayer();
+		void makeMove(Player &, Square from, Square to);
 		void checkPawns();
 		bool canMove() const;
 		bool anyCanMove() const;
 		bool sendHost(const std::string &);
-		bool sendGuest(const std::string &);
-		void sendBoth(const std::string &);
-		void sendAll(const std::string &);
+		virtual void sendAll(const std::string &);
+		virtual bool isReady() const = 0;
 		void sendSpectators(const std::string &);
-		void sendCaptured(Connection, std::shared_ptr<Piece>);
+		void sendCaptured(Player &, std::shared_ptr<Piece>);
 		void sendBoard();
 		std::string columnMessage();
-		Connection & getWhite();
-		Connection & getBlack();
-		Connection & get(Color);
 };
 
 #endif
