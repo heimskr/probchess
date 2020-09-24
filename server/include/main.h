@@ -17,7 +17,8 @@ void open_handler(Connection);
 void close_handler(Connection);
 void signal_handler(int);
 
-void createMatch(Connection, const std::string &id, int column_count, Color, bool hidden, bool noskip);
+void createMatch(Connection, const std::string &id, int column_count, Color, bool hidden, bool noskip,
+                 const std::string &type);
 void joinMatch(Connection, const std::string &id, bool as_spectator);
 
 #endif

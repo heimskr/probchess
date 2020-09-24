@@ -30,8 +30,23 @@ void Match::roll() {
 	sendAll(columnMessage());
 }
 
-void Match::end(Player *) {
+void Match::end(Player *winner) {
+	try {
+		if (host.has_value() && winner->role == Player::Role::Host) {
+			sendHost(":Win");
+			sendGuest(":Lose");
+		} else if (guest.has_value() && winner->role == Player::Role::Guest) {
+			sendHost(":Lose");
+			sendGuest(":Win");
+		} else sendBoth(":End");
+		sendSpectators(":Win " + colorName(winner->role == Player::Role::Host? hostColor : otherColor(hostColor)));
+	} catch (websocketpp::exception &) {}
+
 	matchesByID.erase(id);
+
+	if (guest.has_value())
+		if (HumanPlayer *human_guest = dynamic_cast<HumanPlayer *>(guest->get()))
+			matchesByConnection.erase(human_guest->connection.lock().get());
 
 	if (host.has_value())
 		if (HumanPlayer *human_host = dynamic_cast<HumanPlayer *>(host->get()))
@@ -58,6 +73,11 @@ void Match::disconnect(Player &player) {
 			if (human_host->connection.lock().get() == vptr)
 				host.reset();
 
+	if (guest.has_value())
+		if (HumanPlayer *human_guest = dynamic_cast<HumanPlayer *>(guest->get()))
+			if (human_guest->connection.lock().get() == vptr)
+				guest.reset();
+
 	if (!isActive()) {
 		std::cout << "Ending match \e[31m" << id << "\e[39m: all players disconnected.\n";
 		end(nullptr);
@@ -65,19 +85,34 @@ void Match::disconnect(Player &player) {
 		broadcast(":Match " + id + " open");
 }
 
+Player & Match::getPlayer(Connection connection) {
+	if (host.has_value())
+		if (HumanPlayer *human_host = dynamic_cast<HumanPlayer *>(host->get()))
+			if (human_host->connection.lock().get() == connection.lock().get())
+				return *human_host;
+	if (guest.has_value())
+		if (HumanPlayer *human_guest = dynamic_cast<HumanPlayer *>(guest->get()))
+			if (human_guest->connection.lock().get() == connection.lock().get())
+				return *human_guest;
+	throw std::runtime_error("Couldn't find player for connection");
+}
+
+Player & Match::currentPlayer() {
+	return currentTurn == hostColor? **host : **guest;
+}
+
 void Match::makeMove(Player &player, Square from, Square to) {
 	if (!isReady())
 		throw ChessError("Match is missing a participant.");
 
-	if (winner.has_value())
+	if (winnerColor.has_value())
 		throw ChessError("Match already over.");
 
 	if (HumanPlayer *human = dynamic_cast<HumanPlayer *>(&player))
 		if (!hasConnection(human->connection))
 			throw ChessError("Invalid connection.");
 
-	const bool isHostTurn = currentTurn == hostColor;
-	if ((address == host->lock().get() && !isHostTurn) || (address == guest->lock().get() && isHostTurn))
+	if (&player != &currentPlayer())
 		throw ChessError("Invalid turn.");
 
 	std::shared_ptr<Piece> from_piece = board.at(from);
@@ -108,18 +143,15 @@ void Match::makeMove(Player &player, Square from, Square to) {
 	if (to_piece) {
 		if (to_piece->color == currentTurn)
 			throw ChessError("Can't capture one of your own pieces.");
-		sendCaptured(*host, to_piece);
-		sendCaptured(*guest, to_piece);
-		for (Connection spectator: spectators)
-			sendCaptured(spectator, to_piece);
+		sendAll(capturedMessage(to_piece));
 		captured.push_back(to_piece);
 		board.erase(to_piece);
 		if (dynamic_cast<King *>(to_piece.get())) {
 			board.move(from_piece, to);
 			checkPawns();
 			sendBoard();
-			winner = currentTurn;
-			end(hostColor == currentTurn? &*host : &*guest);
+			winnerColor = currentTurn;
+			end(hostColor == currentTurn? host->get() : guest->get());
 			return;
 		}
 	}
@@ -208,11 +240,27 @@ bool Match::anyCanMove() const {
 
 bool Match::sendHost(const std::string &message) {
 	if (host.has_value()) {
-		send(*host, message);
+		(*host)->send(message);
 		return true;
 	}
 
 	return false;
+}
+
+bool Match::sendGuest(const std::string &message) {
+	if (guest.has_value()) {
+		(*guest)->send(message);
+		return true;
+	}
+
+	return false;
+}
+
+void Match::sendBoth(const std::string &message) {
+	if (host.has_value())
+		(*host)->send(message);
+	if (guest.has_value())
+		(*guest)->send(message);
 }
 
 void Match::sendAll(const std::string &message) {
@@ -225,8 +273,8 @@ void Match::sendSpectators(const std::string &message) {
 		send(spectator, message);
 }
 
-void Match::sendCaptured(Connection connection, std::shared_ptr<Piece> piece) {
-	send(connection, ":Capture " + std::string(piece->square) + " " + piece->name() + " " + colorName(piece->color));
+std::string Match::capturedMessage(std::shared_ptr<Piece> piece) {
+	return ":Capture " + std::string(piece->square) + " " + piece->name() + " " + colorName(piece->color);
 }
 
 void Match::sendBoard() {
@@ -267,4 +315,16 @@ std::string Match::columnMessage() {
 	for (const int column: columns)
 		message += " " + std::to_string(column);
 	return message;
+}
+
+Player & Match::getWhite() {
+	return hostColor == Color::White? **host : **guest;
+}
+
+Player & Match::getBlack() {
+	return hostColor == Color::Black? **host : **guest;
+}
+
+Player & Match::get(Color color) {
+	return color == Color::White? getWhite() : getBlack();
 }
