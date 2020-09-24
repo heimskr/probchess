@@ -39,3 +39,24 @@ void HumanMatch::sendAll(const std::string &message) {
 bool HumanMatch::isReady() const {
 	return hasBoth();
 }
+
+void HumanMatch::afterMove(Player &player, Square from, Square to) {
+	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
+
+	if (noSkip) {
+		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
+		sendAll(":Turn " + colorName(currentTurn));
+		do roll(); while (!canMove());
+	} else {
+		while (true) {
+			currentTurn = currentTurn == Color::White? Color::Black : Color::White;
+			sendAll(":Turn " + colorName(currentTurn));
+			roll();
+			if (!canMove()) {
+				sendAll(":Skip");
+			} else break;
+		}
+	}
+
+	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
+}

@@ -41,6 +41,7 @@ class Match {
 		virtual bool hasConnection(Connection) const = 0;
 		Player & currentPlayer();
 		void makeMove(Player &, Square from, Square to);
+		virtual void afterMove(Player &, Square from, Square to) = 0;
 		void checkPawns();
 		bool canMove() const;
 		bool anyCanMove() const;

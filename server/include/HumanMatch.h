@@ -15,6 +15,7 @@ class HumanMatch: public Match {
 		bool sendGuest(const std::string &);
 		void sendAll(const std::string &) override;
 		bool isReady() const override;
+		void afterMove(Player &, Square from, Square to) override;
 };
 
 #endif

@@ -163,24 +163,7 @@ void Match::makeMove(Player &player, Square from, Square to) {
 	board.move(from_piece, to);
 	checkPawns();
 	sendBoard();
-	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
-
-	if (noSkip) {
-		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
-		sendAll(":Turn " + colorName(currentTurn));
-		do roll(); while (!canMove());
-	} else {
-		while (true) {
-			currentTurn = currentTurn == Color::White? Color::Black : Color::White;
-			sendAll(":Turn " + colorName(currentTurn));
-			roll();
-			if (!canMove()) {
-				sendAll(":Skip");
-			} else break;
-		}
-	}
-
-	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
+	afterMove(player, from, to);
 }
 
 void Match::checkPawns() {
