@@ -5,6 +5,7 @@
 
 #include "AIMatch.h"
 #include "Board.h"
+#include "CCCPPlayer.h"
 #include "ChessError.h"
 #include "HumanMatch.h"
 #include "HumanPlayer.h"
@@ -225,6 +226,8 @@ void createMatch(Connection hdl, const std::string &id, int column_count, Color 
 		match = std::make_shared<HumanMatch>(id, hidden, noskip, column_count, color);
 	} else if (type == "random") {
 		match = AIMatch::create<RandomPlayer>(id, hidden, noskip, column_count, color);
+	} else if (type == "cccp") {
+		match = AIMatch::create<CCCPPlayer>(id, hidden, noskip, column_count, color);
 	} else {
 		send(hdl, ":Error Invalid match type.");
 		return;

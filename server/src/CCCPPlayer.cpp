@@ -5,8 +5,42 @@
 #include "Match.h"
 
 bool CCCPPlayer::checkSuperior(Match &match, const LabeledMove &check, const LabeledMove &alternative) const {
+	// Prefer checkmate.
+	if (check.isCheckmated != alternative.isCheckmated)
+		return alternative.isCheckmated;
 
-	return true;
+	// Prefer check.
+	if (check.isInCheck != alternative.isInCheck)
+		return alternative.isInCheck;
+
+	// Prefer capture, especially larger value.
+	if (check.captured.has_value()) {
+		if (!alternative.captured.has_value())
+			return false;
+		// Maybe return the value of the if-expression directly?
+		if ((*check.captured)->typeValue() < (*alternative.captured)->typeValue())
+			return true;
+	} else if (alternative.captured.has_value())
+		return true;
+
+	// Prefer move depth.
+	if (check.move.to.row != alternative.move.to.row) {
+		if (match.currentTurn == Color::Black)
+			return check.move.to.row <= alternative.move.to.row;
+		return alternative.move.to.row <= check.move.to.row;
+	}
+
+	// Prefer moving towards the center.
+	if (check.move.to.column != alternative.move.to.column) {
+		const int checkDistance = centerDistance(check.move.to.column);
+		const int alternativeDistance = centerDistance(alternative.move.to.column);
+		if (checkDistance != alternativeDistance)
+			return alternativeDistance < checkDistance;
+	}
+
+	// TODO: prefer promotion.
+
+	return moveCode(check.move) < moveCode(alternative.move);
 }
 
 int CCCPPlayer::centerDistance(int column) const {
