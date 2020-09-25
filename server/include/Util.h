@@ -11,4 +11,6 @@ bool isNumeric(char);
 bool isNumeric(const std::string &);
 std::vector<std::string> split(const std::string &str, const std::string &delimeter, bool condense = false);
 
+std::ostream & warn();
+
 #endif

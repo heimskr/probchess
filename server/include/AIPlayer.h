@@ -9,11 +9,15 @@
 
 class Match;
 
-struct AIPlayer: public Player {
-	using Player::Player;
+class AIPlayer: public Player {
+	protected:
+		std::list<Move> getPossibleMoves(const Match &match, const std::set<int> &columns) const;
 
-	void send(const std::string &) override;
-	virtual Move chooseMove(Match &, const std::set<int> &columns) = 0;
+	public:
+		using Player::Player;
+
+		void send(const std::string &) override;
+		virtual Move chooseMove(Match &, const std::set<int> &columns) = 0;
 };
 
 #endif

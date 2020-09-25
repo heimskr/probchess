@@ -5,22 +5,13 @@
 
 #include "Match.h"
 #include "StockfishPlayer.h"
+#include "Util.h"
 #include "fdstream.h"
 
 Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
-	std::list<Move> possibilities;
-	for (const int column: columns) {
-		for (int row = 0; row < match.board.height; ++row) {
-			std::shared_ptr<Piece> piece = match.board.at(row, column);
-			if (!piece || piece->color != color)
-				continue;
-			for (const Square &square: piece->canMoveTo())
-				possibilities.push_back({piece->square, square});
-		}
-	}
+	std::list<Move> possibilities = getPossibleMoves(match, columns);
 
-	if (possibilities.empty())
-		throw std::runtime_error("StockfishBot has no moves to select from.");
+	std::cout << "Current turn: " << colorName(match.currentTurn) << "\n";
 	
 	int child_to_parent[2], parent_to_child[2];
 
@@ -41,20 +32,48 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 		ifdstream in(child_to_parent[0]);
 		ofdstream out(parent_to_child[1]);
 
-		out << "uci\n";
 		std::string line;
-		std::getline(in, line);
-		std::cout << "[line: \"" << line << "\"]\n";
-		std::getline(in, line);
-		std::cout << "[line: \"" << line << "\"]\n";
+		std::getline(in, line); std::cout << "[" << line << "]\n";
+
+		out << "ucinewgame\n";
+		out << "position fen " << match.board.toFEN(otherColor(match.currentTurn)) << "\n";
+		std::cout << "position fen " << match.board.toFEN(otherColor(match.currentTurn)) << "\n";
+
+		out << "go searchmoves";
+		std::cout << "go searchmoves";
+		for (const Move &move: possibilities) {
+			out << " " << move.pseudoalgebraic();
+			std::cout << " " << move.pseudoalgebraic();
+		}
+		out << "\n";
+		std::cout << "\n";
+
+		Move bestmove {{0, 0}, {0, 0}};
+
+		while (std::getline(in, line)) {
+			if (line.substr(0, 9) == "bestmove ") {
+				std::cout << "[line: \"" << line << "\"]\n";
+				std::string beststring;
+				for (int i = 9; line[i] != ' '; ++i)
+					beststring.push_back(line[i]);
+				std::cout << "Beststring: [" << beststring << "]\n";
+				if (beststring.find("none") != std::string::npos) {
+					const Move &guess = *std::next(possibilities.begin(), rand() % possibilities.size());
+					warn() << "Stockfish couldn't choose a move. Choosing \e[1m" << guess.pseudoalgebraic()
+					       << "\e[22m\n";
+					return guess;
+				}
+
+				bestmove = beststring;
+				break;
+			}
+		}
 
 		close(parent_to_child[0]);
 		close(child_to_parent[1]);
-	} else {
-		std::cerr << "\e[31mfork() failed\e[39m\n";
-	}
+		return bestmove;
+	} else std::cerr << "\e[31mfork() failed\e[39m\n";
 
-	for(;;);
-
-	return {{0, 0}, {0, 0}};
+	match.sendAll(":Error Stockfish failed to find a move.");
+	return *std::next(possibilities.begin(), rand() % possibilities.size());
 }

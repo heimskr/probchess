@@ -7,7 +7,10 @@
 
 struct Move {
 	Square from, to;
+
 	Move(Square from_, Square to_): from(from_), to(to_) {}
+	Move(const std::string &);
+
 	std::string pseudoalgebraic() const;
 };
 

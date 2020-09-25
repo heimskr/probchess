@@ -7,6 +7,8 @@
 #include "main.h"
 #include "piece/all.h"
 
+// #define CANMOVE_LOUD
+
 Match::Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Color host_color):
 id(id_), hidden(hidden_), noSkip(no_skip), hostColor(host_color), columnCount(column_count) {
 	board.placePieces();
@@ -185,6 +187,7 @@ void Match::checkPawns() {
 }
 
 bool Match::canMove() const {
+#ifdef CANMOVE_LOUD
 	std::cout << board << "\n";
 	for (const int column: columns) {
 		std::cout << "Scanning column \e[1m" << column << "\e[22m for pieces.\n";
@@ -210,6 +213,15 @@ bool Match::canMove() const {
 			// 	return true;
 		}
 	}
+#else
+	for (const int column: columns) {
+		for (int row = 0; row < board.height; ++row) {
+			std::shared_ptr<Piece> piece = board.at(row, column);
+			if (piece && piece->color == currentTurn && !piece->canMoveTo().empty())
+				return true;
+		}
+	}
+#endif
 
 	std::cout << "\e[31mNo moves were found.\e[0m\n";
 	return false;

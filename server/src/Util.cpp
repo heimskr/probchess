@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "Util.h"
 
 long parseLong(const std::string &str, int base) {
@@ -45,4 +47,8 @@ std::vector<std::string> split(const std::string &str, const std::string &delime
 	}
 
 	return out;
+}
+
+std::ostream & warn() {
+	return std::cerr << "\e[2m[\e[22;33m!\e[39;2m]\e[22m ";
 }
