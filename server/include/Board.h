@@ -38,6 +38,7 @@ class Board {
 		bool move(std::shared_ptr<Piece>, int new_row, int new_column);
 		bool move(std::shared_ptr<Piece>, Square);
 		std::list<std::shared_ptr<Piece>> getPieces(Color) const;
+		std::string toFEN(Color) const;
 		std::string toString(std::shared_ptr<Piece>) const;
 		operator std::string() const;
 

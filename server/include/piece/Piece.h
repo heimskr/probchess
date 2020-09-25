@@ -32,6 +32,7 @@ class Piece {
 		virtual Piece * clone(Board *) const = 0;
 		virtual Type getType() const = 0;
 		virtual int typeValue() const = 0;
+		virtual std::string toFEN() const = 0;
 
 		operator std::string() const { return toString(color); }
 };

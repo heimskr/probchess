@@ -12,6 +12,7 @@ class King: public Piece {
 		virtual int typeValue() const override { return 0; }
 		virtual std::string name() const override { return "king"; }
 		virtual std::string toString(Color color = Color::Black) const override { return color == Color::White? "♔" : "♚"; }
+		virtual std::string toFEN() const override { return color == Color::White? "K" : "k"; }
 };
 
 #endif

@@ -12,6 +12,7 @@ class Pawn: public Piece {
 		virtual int typeValue() const override { return 1; }
 		virtual std::string name() const override { return "pawn"; }
 		virtual std::string toString(Color color = Color::Black) const override { return color == Color::White? "♙" : "♟"; }
+		virtual std::string toFEN() const override { return color == Color::White? "P" : "p"; }
 };
 
 #endif

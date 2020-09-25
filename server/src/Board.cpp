@@ -197,6 +197,32 @@ std::list<std::shared_ptr<Piece>> Board::getPieces(Color color) const {
 	return out;
 }
 
+std::string Board::toFEN(Color color) const {
+	std::stringstream out;
+	for (int row = 0; row < height; ++row) {
+		if (0 < row)
+			out << "/";
+		for (int column = 0; column < width; ++column) {
+			std::shared_ptr<Piece> piece = at(row, column);
+			if (piece)
+				out << piece->toFEN();
+			else {
+				int i, blanks = 1;
+				for (i = 1; column + i < width && !at(row, column + i); ++i)
+					++blanks;
+				column += i - 1;
+				out << blanks;
+			}
+		}
+	}
+
+	out << " " << (color == Color::White? "w" : "b");
+	out << " -"; // TODO: change when (if) castling is ever implemented.
+	out << " -"; // TODO: change when (if) en passant is ever implemented.
+	out << " 0 1";
+	return out.str();
+}
+
 std::string Board::toString(std::shared_ptr<Piece> show_moves) const {
 	const std::list<Square> moves = show_moves? show_moves->canMoveTo() : std::list<Square>();
 

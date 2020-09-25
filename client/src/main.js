@@ -147,6 +147,11 @@ function connect() {
 			return;
 		}
 
+		if (verb == "FEN") {
+			console.log("FEN:", rest);
+			return;
+		}
+
 		console.warn("Unknown verb:", verb);
 	};
 

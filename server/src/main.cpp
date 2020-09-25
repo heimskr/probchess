@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
 	signal(SIGINT, signal_handler);
 
 	server = new asio_server;
+	server->set_reuse_addr(true);
 	server->set_error_channels(websocketpp::log::elevel::all);
 	// server->set_access_channels(websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload ^ websocketpp::log::alevel::frame_header);
 	server->set_access_channels(websocketpp::log::alevel::none);
@@ -193,6 +194,20 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 				send(hdl, ":Match " + pair.first + " " + (match->isReady()? "closed" : "open"));
 		}
 
+		return;
+	}
+
+	if (verb == "FEN") { // :FEN
+		std::shared_ptr<Match> match;
+		try {
+			match = matchesByConnection.at(hdl.lock().get());
+		} catch (std::out_of_range &) {
+			send(hdl, ":Error Not in a match.");
+			return;
+		}
+
+		std::cout << "FEN: " << match->board.toFEN(match->currentTurn) << "\n";
+		send(hdl, ":FEN " + match->board.toFEN(match->currentTurn));
 		return;
 	}
 
