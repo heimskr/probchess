@@ -21,7 +21,7 @@ class Match {
 		std::optional<Color> winnerColor;
 		int columnCount;
 		std::set<int> columns;
-		bool started = false;
+		bool started = false, over = false;
 		std::list<std::shared_ptr<Piece>> captured;
 		std::list<Connection> spectators;
 

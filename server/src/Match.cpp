@@ -46,6 +46,8 @@ void Match::end(Player *winner) {
 		}
 	} catch (websocketpp::exception &) {}
 
+	over = true;
+
 	matchesByID.erase(id);
 
 	if (guest.has_value())
@@ -150,6 +152,7 @@ void Match::makeMove(Player &player, const Move &move) {
 			board.move(from_piece, move.to);
 			checkPawns();
 			sendBoard();
+			sendAll(":MoveMade " + std::string(move.from) + " " + std::string(move.to));
 			winnerColor = currentTurn;
 			end(hostColor == currentTurn? host->get() : guest->get());
 			return;

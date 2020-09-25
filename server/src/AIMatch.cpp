@@ -1,5 +1,6 @@
 #include "AIMatch.h"
 #include "HumanPlayer.h"
+#include "NoKingError.h"
 #include "RandomPlayer.h"
 #include "main.h"
 
@@ -39,12 +40,6 @@ void AIMatch::afterMove() {
 
 	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
 
-	if (currentTurn != hostColor) {
-		try {
-			makeMove(**guest, dynamic_cast<AIPlayer *>(guest->get())->chooseMove(*this, columns));
-		} catch (std::exception &err) {
-			std::cerr << "AI couldn't make move: " << err.what() << "\n";
-			throw;
-		}
-	}
+	if (currentTurn != hostColor && !over)
+		makeMove(**guest, dynamic_cast<AIPlayer *>(guest->get())->chooseMove(*this, columns));
 }

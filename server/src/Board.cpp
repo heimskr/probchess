@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "Board.h"
+#include "NoKingError.h"
 #include "piece/all.h"
 
 Board::Board(const Board &other) {
@@ -71,15 +72,25 @@ std::shared_ptr<Piece> Board::findKing(Color color) const {
 		}
 	}
 
-	throw std::runtime_error("Couldn't find " + colorName(color) + " king.");
+	throw NoKingError("Couldn't find " + colorName(color) + " king.");
 }
 
 bool Board::isInCheck(Color color) {
-	return isAttacked(color, findKing(color)->square);
+	try {
+		return isAttacked(color, findKing(color)->square);
+	} catch (const NoKingError &) {
+		return false;
+	}
 }
 
 bool Board::isCheckmated(Color color) {
-	std::shared_ptr<Piece> king = findKing(color);
+	std::shared_ptr<Piece> king;
+	try {
+		king = findKing(color);
+	} catch (const NoKingError &) {
+		return true;
+	}
+
 	if (!isAttacked(color, king->square))
 		return false;
 
