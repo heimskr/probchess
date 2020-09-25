@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <signal.h>
 #include <unistd.h>
 
 #include "Match.h"
@@ -50,9 +51,16 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 
 		Move bestmove {{0, 0}, {0, 0}};
 
+		if (kill(child_pid, 0) == -1) {
+			if (errno == ESRCH) {
+				warn() << "Stockfish isn't running anymore.\n";
+				return *std::next(possibilities.begin(), rand() % possibilities.size());
+			} else warn() << "kill() failed: " << strerror(errno) << "\n";
+		}
+
 		while (std::getline(in, line)) {
+			std::cout << "[line: \"" << line << "\"]\n";
 			if (line.substr(0, 9) == "bestmove ") {
-				std::cout << "[line: \"" << line << "\"]\n";
 				std::string beststring;
 				for (int i = 9; line[i] != ' '; ++i)
 					beststring.push_back(line[i]);
@@ -66,6 +74,13 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 
 				bestmove = beststring;
 				break;
+			}
+
+			if (kill(child_pid, 0) == -1) {
+				if (errno == ESRCH) {
+					warn() << "Stockfish isn't running anymore.\n";
+					return *std::next(possibilities.begin(), rand() % possibilities.size());
+				} else warn() << "kill() failed: " << strerror(errno) << "\n";
 			}
 		}
 
