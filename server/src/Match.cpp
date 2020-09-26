@@ -4,6 +4,7 @@
 #include "ChessError.h"
 #include "HumanPlayer.h"
 #include "Match.h"
+#include "Options.h"
 #include "main.h"
 #include "piece/all.h"
 
@@ -187,7 +188,7 @@ void Match::checkPawns() {
 }
 
 bool Match::canMove() const {
-#ifdef CANMOVE_LOUD
+#ifdef DEBUG_SKIPS
 	std::cout << board << "\n";
 	for (const int column: columns) {
 		std::cout << "Scanning column \e[1m" << column << "\e[22m for pieces.\n";

@@ -23,7 +23,9 @@ bool HumanMatch::isReady() const {
 }
 
 void HumanMatch::afterMove() {
+#ifdef DEBUG_SKIPS
 	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
+#endif
 
 	if (noSkip) {
 		currentTurn = currentTurn == Color::White? Color::Black : Color::White;
@@ -40,5 +42,7 @@ void HumanMatch::afterMove() {
 		}
 	}
 
+#ifdef DEBUG_SKIPS
 	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
+#endif
 }

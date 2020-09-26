@@ -1,6 +1,7 @@
 #include "AIMatch.h"
 #include "HumanPlayer.h"
 #include "NoKingError.h"
+#include "Options.h"
 #include "RandomPlayer.h"
 #include "main.h"
 
@@ -21,7 +22,9 @@ bool AIMatch::isReady() const {
 }
 
 void AIMatch::afterMove() {
+#ifdef DEBUG_SKIPS
 	std::cout << "\e[1mSkip-checking loop started.\e[0m\n";
+#endif
 
 	if (noSkip) {
 		invertTurn();
@@ -38,7 +41,9 @@ void AIMatch::afterMove() {
 		}
 	}
 
+#ifdef DEBUG_SKIPS
 	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
+#endif
 
 	if (currentTurn != hostColor && !over) {
 		Move move = dynamic_cast<AIPlayer *>(guest->get())->chooseMove(*this, columns);
