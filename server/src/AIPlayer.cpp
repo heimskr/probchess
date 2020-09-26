@@ -6,7 +6,7 @@ std::list<Move> AIPlayer::getPossibleMoves(const Match &match, const std::set<in
 	for (const int column: columns)
 		for (int row = 0; row < match.board.height; ++row) {
 			std::shared_ptr<Piece> piece = match.board.at(row, column);
-			if (!piece || piece->color != color)
+			if (!piece || piece->color != match.currentTurn)
 				continue;
 			for (const Square &square: piece->canMoveTo())
 				possibilities.push_back({piece->square, square});

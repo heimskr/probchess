@@ -61,7 +61,7 @@ Square::operator std::string() const {
 }
 
 std::string Square::algebraic() const {
-	return std::string(1, 'a' + column) + std::to_string(row + 1);
+	return std::string(1, 'a' + column) + std::to_string(8 - row);
 }
 
 Square Square::operator+(const std::pair<int, int> &offsets) const {

@@ -13,7 +13,7 @@ function renderJoin(j) {
 	$(`<option value="human">Human vs. Human</option>`).appendTo(typeSelect);
 	$(`<option value="random">Human vs. RandomBot</option>`).appendTo(typeSelect);
 	$(`<option value="cccp">Human vs. CCCPBot</option>`).appendTo(typeSelect);
-	$(`<option value="stockfish">Human vs. Drunkfish</option>`).appendTo(typeSelect);
+	$(`<option value="stockfish">Human vs. Stockfish</option>`).appendTo(typeSelect);
 	const checkTable = $("<table></table>").appendTo(form);
 	const whiteRow = $("<tr></tr>").appendTo(checkTable);
 	const whiteCheck = $(`<input type="checkbox" checked id="startWhite" />`).appendTo($("<td></td>").appendTo(whiteRow));

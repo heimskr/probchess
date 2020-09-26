@@ -37,8 +37,8 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 		std::getline(in, line); std::cout << "[" << line << "]\n";
 
 		out << "ucinewgame\n";
-		out << "position fen " << match.board.toFEN(otherColor(match.currentTurn)) << "\n";
-		std::cout << "position fen " << match.board.toFEN(otherColor(match.currentTurn)) << "\n";
+		out << "position fen " << match.board.toFEN(match.currentTurn) << "\n";
+		std::cout << "position fen " << match.board.toFEN(match.currentTurn) << "\n";
 
 		out << "go searchmoves";
 		std::cout << "go searchmoves";

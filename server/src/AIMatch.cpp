@@ -40,6 +40,8 @@ void AIMatch::afterMove() {
 
 	std::cout << "\e[1mSkip-checking loop ended.\e[0m\n";
 
-	if (currentTurn != hostColor && !over)
-		makeMove(**guest, dynamic_cast<AIPlayer *>(guest->get())->chooseMove(*this, columns));
+	if (currentTurn != hostColor && !over) {
+		Move move = dynamic_cast<AIPlayer *>(guest->get())->chooseMove(*this, columns);
+		makeMove(**guest, move);
+	}
 }
