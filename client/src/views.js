@@ -47,7 +47,8 @@ function renderJoin(j) {
 	`));
 
 	renderMatchTable($(`<table id="matches"></table>`).appendTo(j));
-	$("#matchID").focus();
+	if (!window.navigator.userAgent.match(/iPhone/))
+		$("#matchID").focus();
 	state.view = "join";
 }
 
@@ -91,11 +92,13 @@ function renderBoard(board, j) {
 			$(".square").removeClass("possible");
 			for (const move of piece.canMoveTo())
 			$(`#cell${move.row}${move.column}`).addClass("possible");
+			forceUpdate();
 		} else {
 			if (row != state.selected.row || col != state.selected.column)
 			move(`${state.selected.row}${state.selected.column}`, `${row}${col}`);
 			state.selected = null;
 			$("td.square").removeClass(["possible", "selected-piece"]);
+			forceUpdate();
 		}
 	});
 	$(`<div id="before"></div>`).prependTo(container);

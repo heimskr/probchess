@@ -1,3 +1,12 @@
+function forceUpdate() {
+	for (const item of $("td")) {
+		const old_display = item.style.display;
+		item.style.display = "none";
+		item.offsetHeight;
+		item.style.display = old_display;
+	}
+}
+
 const pieceMap = {bishop: "♝", king: "♚", knight: "♞", pawn: "♟&#xFE0E;", queen: "♛", rook: "♜"};
 const abbreviations = {b: "bishop", k: "king", h: "knight", p: "pawn", q: "queen", r: "rook"};
 
@@ -90,6 +99,7 @@ class Chessboard {
 			}
 		}
 
+		forceUpdate();
 		return this.table;
 	}
 
@@ -109,5 +119,7 @@ class Chessboard {
 					cell.addClass(piece[1] + "-piece").html(pieceMap[piece[0]]);
 			}
 		}
+
+		forceUpdate();
 	}
 }

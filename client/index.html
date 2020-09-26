@@ -9,6 +9,10 @@
 		<script type="text/javascript" src="src/main.js"></script>
 		<script type="text/javascript" src="src/views.js"></script>
 		<link rel="stylesheet" href="style.css" />
+		<script>
+			// Caching stylesheets from hosts on the same network? Really?
+			document.write(`<link rel="stylesheet" href="iphone.css?${Math.random().toString().substr(2)}" />`);
+		</script>
 	</head>
 	<body>
 		<main></main>

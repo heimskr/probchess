@@ -1,0 +1,48 @@
+@media only screen and (min-device-width : 375px) and (max-device-width : 812px) and (-webkit-device-pixel-ratio : 3) and (orientation : portrait) {
+	body {
+		font-size: 40pt;
+	}
+	
+	main {
+		background: green !important;
+	}
+
+	#joinForm, #matches, #rules > div {
+		width: 90%;
+	}
+
+	#joinForm select, #joinForm input, #joinForm button {
+		font-size: 40pt;
+	}
+
+	#joinForm input[type=checkbox] {
+		width: 50px;
+		height: 50px;
+	}
+
+	#matches button {
+		font-size: 30pt;
+	}
+
+	#board td {
+		min-height: 115px;
+		min-width: 115px;
+	}
+
+	#before, #after, #board td {
+		font: 80pt monospace;
+	}
+
+	#before, #after {
+		height: 80pt;
+	}
+
+	#floaters > div {
+		font-size: 40pt;
+	}
+
+	#board td:empty:before {
+		content: "♚";
+		visibility: hidden;
+	}
+}
