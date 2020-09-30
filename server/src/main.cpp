@@ -78,7 +78,6 @@ void sigint_handler(int) {
 void sigchld_handler(int) {
 	const int old_errno = errno;
 	int stat_loc;
-	int n = 0;
 	pid_t pid;
 	while (0 < (pid = waitpid(-1, &stat_loc, WNOHANG)))
 		if (WTERMSIG(stat_loc) == SIGSEGV)
