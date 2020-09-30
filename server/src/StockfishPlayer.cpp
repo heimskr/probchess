@@ -1,9 +1,10 @@
+#include <cerrno>
 #include <condition_variable>
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <mutex>
-#include <signal.h>
 #include <thread>
 #include <unistd.h>
 
@@ -11,6 +12,7 @@
 #include "StockfishPlayer.h"
 #include "Util.h"
 #include "fdstream.h"
+#include "main.h"
 
 Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 	std::list<Move> possibilities = getPossibleMoves(match, columns);
@@ -25,9 +27,6 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 		}
 	}
 
-
-	std::cout << "Current turn: " << colorName(match.currentTurn) << "\n";
-	
 	int child_to_parent[2], parent_to_child[2];
 
 	if (pipe(child_to_parent) == -1)
@@ -35,7 +34,6 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 
 	if (pipe(parent_to_child) == -1)
 		std::cerr << "pipe(c2p) failed: " << strerror(errno) << "\n";
-
 
 	pid_t child_pid = fork();
 
@@ -73,11 +71,16 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 		std::thread segfault_watch = std::thread([&]() {
 			while (!done) {
 				std::unique_lock<std::mutex> lock(mutex);
-				condition.wait_for(lock, std::chrono::seconds(1), [&] { return done; });
+				condition.wait_for(lock, std::chrono::milliseconds(321), [&] { return done; });
 				int stat_loc;
 				waitpid(child_pid, &stat_loc, WNOHANG);
-				if (WTERMSIG(stat_loc) == SIGSEGV) {
-					std::cout << "Segfault detected.\n";
+
+				const bool was_segfault = WTERMSIG(stat_loc) == SIGSEGV;
+				const bool in_segfault_set = segfault_set.count(child_pid) != 0;
+				if (in_segfault_set)
+					segfault_set.erase(child_pid);
+
+				if (was_segfault || in_segfault_set) {
 					close(child_to_parent[0]);
 					bestmove = *std::next(possibilities.begin(), rand() % possibilities.size());
 					break;
@@ -114,9 +117,6 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 			condition.notify_all();
 			segfault_watch.join();
 		}
-
-		int stat_loc;
-		waitpid(child_pid, &stat_loc, WNOHANG); // No zombies pls
 
 		return bestmove;
 	} else std::cerr << "\e[31mfork() failed\e[39m\n";

@@ -1,6 +1,8 @@
-#include <iostream>
+#include <cerrno>
 #include <cstdlib>
+#include <iostream>
 #include <signal.h>
+#include <sys/wait.h>
 #include <time.h>
 
 #include "AIMatch.h"
@@ -20,6 +22,7 @@
 asio_server *server;
 std::unordered_map<std::string, std::shared_ptr<Match>> matchesByID;
 std::unordered_map<void *, std::shared_ptr<Match>> matchesByConnection;
+std::unordered_set<pid_t> segfault_set;
 
 int main(int argc, char **argv) {
 	srand(time(NULL));
@@ -36,7 +39,16 @@ int main(int argc, char **argv) {
 		std::cerr << "Not a valid port: " << argv[1] << "\n";
 	}
 
-	signal(SIGINT, signal_handler);
+	signal(SIGINT, sigint_handler);
+
+	struct sigaction action;
+	action.sa_handler = &sigchld_handler;
+	sigemptyset(&action.sa_mask);
+	action.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+	if (sigaction(SIGCHLD, &action, nullptr) == -1) {
+		std::cerr << "Couldn't register SIGCHLD handler: " << strerror(errno) << "\n";
+		exit(1);
+	}
 
 	server = new asio_server;
 	server->set_reuse_addr(true);
@@ -53,7 +65,7 @@ int main(int argc, char **argv) {
 	delete server;
 }
 
-void signal_handler(int) {
+void sigint_handler(int) {
 	std::cout << "Goodbye.\n";
 	server->stop_listening();
 	for (Connection hdl: connections) {
@@ -61,6 +73,17 @@ void signal_handler(int) {
 		server->close(hdl, websocketpp::close::status::going_away, "Server shutting down.");
 	}
 	server->stop();
+}
+
+void sigchld_handler(int) {
+	const int old_errno = errno;
+	int stat_loc;
+	int n = 0;
+	pid_t pid;
+	while (0 < (pid = waitpid(-1, &stat_loc, WNOHANG)))
+		if (WTERMSIG(stat_loc) == SIGSEGV)
+			segfault_set.insert(pid);
+	errno = old_errno;
 }
 
 void open_handler(Connection hdl) {
