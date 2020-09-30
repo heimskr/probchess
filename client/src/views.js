@@ -44,6 +44,9 @@ function renderJoin(j) {
 		you. When you're in check, you're not required to immediately get out of check. This is because you won't always
 		be given a chance to get yourself out of check. However, the other player won't necessarily be able to checkmate
 		you right away either.
+		<h4>Skipping</h4>
+		In the standard configuration, if the column chosen doesn't contain any moveable pieces, the player's turn is
+		skipped. With skipn't mode, rerolls will be made until a column with moveable pieces is chosen.
 	`));
 
 	renderMatchTable($(`<table id="matches"></table>`).appendTo(j));
