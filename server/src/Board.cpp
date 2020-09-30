@@ -4,6 +4,7 @@
 
 #include "Board.h"
 #include "NoKingError.h"
+#include "Util.h"
 #include "piece/all.h"
 
 Board::Board(const Board &other) {
@@ -159,6 +160,36 @@ void Board::placePieces() {
 	for (int column = 0; column < width; ++column) {
 		set<Pawn>(Color::Black, 1, column);
 		set<Pawn>(Color::White, height - 2, column);
+	}
+}
+
+void Board::loadFEN(const std::string &fen) {
+	const std::vector<std::string> rows = split(fen, "/", false);
+	for (int row = 0, max = rows.size(); row < max; ++row) {
+		const std::string &row_string = rows[row];
+		int column = 0;
+		for (char ch: row_string) {
+			if (isNumeric(ch)) {
+				column += ch - '0';
+			} else {
+				switch (ch) {
+					case 'B': set<Bishop>(Color::White, row, column); break;
+					case 'b': set<Bishop>(Color::Black, row, column); break;
+					case 'K': set<King>  (Color::White, row, column); break;
+					case 'k': set<King>  (Color::Black, row, column); break;
+					case 'N': set<Knight>(Color::White, row, column); break;
+					case 'n': set<Knight>(Color::Black, row, column); break;
+					case 'P': set<Pawn>  (Color::White, row, column); break;
+					case 'p': set<Pawn>  (Color::Black, row, column); break;
+					case 'Q': set<Queen> (Color::White, row, column); break;
+					case 'q': set<Queen> (Color::Black, row, column); break;
+					case 'R': set<Rook>  (Color::White, row, column); break;
+					case 'r': set<Rook>  (Color::Black, row, column); break;
+					default: throw std::runtime_error("Unrecognized character in FEN: " + std::string(1, ch));
+				}
+				++column;
+			}
+		}
 	}
 }
 

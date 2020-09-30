@@ -214,6 +214,7 @@ bool Match::canMove() const {
 			// 	return true;
 		}
 	}
+	std::cout << "\e[31mNo moves were found.\e[0m\n";
 #else
 	for (const int column: columns) {
 		for (int row = 0; row < board.height; ++row) {
@@ -224,7 +225,6 @@ bool Match::canMove() const {
 	}
 #endif
 
-	std::cout << "\e[31mNo moves were found.\e[0m\n";
 	return false;
 }
 

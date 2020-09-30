@@ -25,9 +25,9 @@ class Match {
 		std::list<std::shared_ptr<Piece>> captured;
 		std::list<Connection> spectators;
 
+		Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Color host_color);
 		Match(const Match &) = delete;
 		Match(Match &&) = delete;
-		Match(const std::string &id_, bool hidden_, bool no_skip, int column_count, Color host_color);
 
 		Match & operator=(const Match &) = delete;
 		Match & operator=(Match &&) = delete;

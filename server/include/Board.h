@@ -33,6 +33,7 @@ class Board {
 		std::list<Move> allMoves() const;
 		std::list<Move> allMoves(Color) const;
 		void placePieces();
+		void loadFEN(const std::string &);
 		void erase(std::shared_ptr<Piece>);
 		void erase(int row, int column);
 		bool move(std::shared_ptr<Piece>, int new_row, int new_column);
