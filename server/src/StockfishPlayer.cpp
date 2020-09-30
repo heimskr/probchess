@@ -52,7 +52,7 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 		ofdstream out(parent_to_child[1]);
 
 		std::string line;
-		std::getline(in, line); std::cout << "[" << line << "]\n";
+		std::getline(in, line);
 
 		out << "ucinewgame\n";
 		out << "position fen " << match.board.toFEN(match.currentTurn) << "\n";
@@ -93,10 +93,9 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 					beststring.push_back(line[i]);
 				// std::cout << "Beststring: [" << beststring << "]\n";
 				if (beststring.find("none") != std::string::npos) {
-					const Move &guess = *std::next(possibilities.begin(), rand() % possibilities.size());
-					warn() << "Stockfish couldn't choose a move. Choosing \e[1m" << guess.pseudoalgebraic()
+					bestmove = *std::next(possibilities.begin(), rand() % possibilities.size());
+					warn() << "Stockfish couldn't choose a move. Choosing \e[1m" << bestmove.pseudoalgebraic()
 					       << "\e[22m\n";
-					bestmove = guess;
 				} else {
 					bestmove = beststring;
 				}
@@ -115,6 +114,9 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 			condition.notify_all();
 			segfault_watch.join();
 		}
+
+		int stat_loc;
+		waitpid(child_pid, &stat_loc, WNOHANG); // No zombies pls
 
 		return bestmove;
 	} else std::cerr << "\e[31mfork() failed\e[39m\n";
