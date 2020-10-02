@@ -134,12 +134,11 @@ void Match::makeMove(Player &player, const Move &move) {
 		throw ChessError("Incorrect column.");
 
 	bool can_move = false;
-	for (const Square &possibility: from_piece->canMoveTo()) {
+	for (const Square &possibility: from_piece->canMoveTo())
 		if (possibility == move.to) {
 			can_move = true;
 			break;
 		}
-	}
 
 	if (!can_move)
 		throw ChessError("Invalid move.");
@@ -172,7 +171,7 @@ void Match::makeMove(Player &player, const Move &move) {
 void Match::checkPawns() {
 	for (int column = 0; column < board.width; ++column) {
 		std::shared_ptr<Piece> piece = board.at(0, column);
-		if (piece && dynamic_cast<Pawn *>(piece.get()) && piece->color == Color::White) {
+		if (piece && piece->getType() == Piece::Type::Pawn && piece->color == Color::White) {
 			board.erase(piece);
 			board.set<Queen>(Color::White, 0, column);
 		}
@@ -180,7 +179,7 @@ void Match::checkPawns() {
 
 	for (int column = 0; column < board.width; ++column) {
 		std::shared_ptr<Piece> piece = board.at(board.height - 1, column);
-		if (piece && dynamic_cast<Pawn *>(piece.get()) && piece->color == Color::Black) {
+		if (piece && piece->getType() == Piece::Type::Pawn && piece->color == Color::Black) {
 			board.erase(piece);
 			board.set<Queen>(Color::Black, board.height - 1, column);
 		}
@@ -281,20 +280,14 @@ void Match::sendBoard() {
 			if (!piece) {
 				encoded += "__";
 			} else {
-				if (dynamic_cast<Bishop *>(piece.get())) {
-					encoded += "b";
-				} else if (dynamic_cast<King *>(piece.get())) {
-					encoded += "k";
-				} else if (dynamic_cast<Knight *>(piece.get())) {
-					encoded += "h";
-				} else if (dynamic_cast<Pawn *>(piece.get())) {
-					encoded += "p";
-				} else if (dynamic_cast<Queen *>(piece.get())) {
-					encoded += "q";
-				} else if (dynamic_cast<Rook *>(piece.get())) {
-					encoded += "r";
-				} else {
-					throw std::runtime_error("Invalid piece at row " + std::to_string(row) + ", column " +
+				switch (piece->getType()) {
+					case Piece::Type::Bishop: encoded += "b"; break;
+					case Piece::Type::King:   encoded += "k"; break;
+					case Piece::Type::Knight: encoded += "h"; break;
+					case Piece::Type::Pawn:   encoded += "p"; break;
+					case Piece::Type::Queen:  encoded += "q"; break;
+					case Piece::Type::Rook:   encoded += "r"; break;
+					default: throw std::runtime_error("Invalid piece at row " + std::to_string(row) + ", column " +
 						std::to_string(column));
 				}
 
@@ -307,7 +300,7 @@ void Match::sendBoard() {
 }
 
 void Match::invertTurn() {
-	currentTurn = currentTurn == Color::White? Color::Black : Color::White;
+	currentTurn = otherColor(currentTurn);
 }
 
 std::string Match::capturedMessage(std::shared_ptr<Piece> piece) {
@@ -330,5 +323,5 @@ Player & Match::getBlack() {
 }
 
 Player & Match::get(Color color) {
-	return color == Color::White? getWhite() : getBlack();
+	return color == hostColor? **host : **guest;
 }

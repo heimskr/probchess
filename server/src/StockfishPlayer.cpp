@@ -117,7 +117,6 @@ Move StockfishPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 			condition.notify_all();
 			segfault_watch.join();
 		}
-
 		return bestmove;
 	} else std::cerr << "\e[31mfork() failed\e[39m\n";
 
