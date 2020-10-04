@@ -88,19 +88,19 @@ function renderBoard(board, j) {
 			const square = new Square(row, col);
 			const pair = board.at(square);
 			if (!pair || pair[1] != state.color || state.columns.indexOf(col) == -1)
-			return;
+				return;
 			state.selected = square;
 			cell.addClass("selected-piece");
 			const piece = Piece.create(state.board, pair, square);
-			$(".square").removeClass("possible");
+			$(".square").removeClass(["possible", "only-move"]);
 			for (const move of piece.canMoveTo())
-			$(`#cell${move.row}${move.column}`).addClass("possible");
+				$(`#cell${move.row}${move.column}`).addClass("possible");
 			forceUpdate();
 		} else {
 			if (row != state.selected.row || col != state.selected.column)
 			move(`${state.selected.row}${state.selected.column}`, `${row}${col}`);
 			state.selected = null;
-			$("td.square").removeClass(["possible", "selected-piece"]);
+			$("td.square").removeClass(["possible", "selected-piece", "only-move"]);
 			forceUpdate();
 		}
 	});

@@ -56,11 +56,24 @@ function connect() {
 			if (state.columns.length < 8)
 				for (const column of state.columns)
 					$(`.col${column}`).addClass("active-column");
+			if (state.turn == state.color) {
+				let moves = [];
+				for (const columnNum of state.columns)
+					for (let row = 0; row < 8; ++row) {
+						const square = new Square(row, columnNum);
+						const pair = state.board.at(square);
+						if (pair && pair[1] == state.color)
+							moves = [...moves, ...Piece.create(state.board, pair, square).canMoveTo()];
+					}
+				if (moves.length == 1)
+					$(`#cell${moves[0].row}${moves[0].column}`).addClass("only-move");
+			}
 			return;
 		}
 
 		if (verb == "Board") { // :Board <encoded>
 			state.board.updatePieces(rest);
+			$(".square").removeClass("only-move");
 			return;
 		}
 

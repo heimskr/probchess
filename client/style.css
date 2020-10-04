@@ -170,6 +170,10 @@ label {
 	background: #fe1 !important;
 }
 
+#board td.only-move {
+	background: purple !important;
+}
+
 #board td.active-column.black {
 	background: #444;
 }
