@@ -293,6 +293,9 @@ void createMatch(Connection hdl, const std::string &id, int column_count, Color 
 
 		if (!match->hidden)
 			broadcast(":Match " + match->id + " " + (match->isReady()? "closed" : "open"));
+	} else {
+		// Hack for PCS3D
+		match->sendBoard();
 	}
 }
 
