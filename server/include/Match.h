@@ -43,7 +43,7 @@ class Match {
 		Player & currentPlayer();
 		void makeMove(Player &, const Move &);
 		virtual void afterMove() = 0;
-		void checkPawns();
+		std::list<Square> checkPawns();
 		bool canMove() const;
 		bool anyCanMove() const;
 		bool sendHost(const std::string &);

@@ -162,18 +162,21 @@ void Match::makeMove(Player &player, const Move &move) {
 	}
 
 	board.move(from_piece, move.to);
-	checkPawns();
+	std::list<Square> promoted = checkPawns();
 	sendBoard();
 	sendAll(":MoveMade " + std::string(move.from) + " " + std::string(move.to));
+	for (const Square &promotion: promoted)
+		sendAll(":Promote " + std::string(promotion));
 	afterMove();
 }
 
-void Match::checkPawns() {
+std::list<Square> Match::checkPawns() {
+	std::list<Square> out;
 	for (int column = 0; column < board.width; ++column) {
 		std::shared_ptr<Piece> piece = board.at(0, column);
 		if (piece && piece->getType() == Piece::Type::Pawn && piece->color == Color::White) {
 			board.erase(piece);
-			sendAll(":Promote " + std::string(piece->square));
+			out.push_back(piece->square);
 			board.set<Queen>(Color::White, 0, column);
 		}
 	}
@@ -182,10 +185,12 @@ void Match::checkPawns() {
 		std::shared_ptr<Piece> piece = board.at(board.height - 1, column);
 		if (piece && piece->getType() == Piece::Type::Pawn && piece->color == Color::Black) {
 			board.erase(piece);
-			sendAll(":Promote " + std::string(piece->square));
+			out.push_back(piece->square);
 			board.set<Queen>(Color::Black, board.height - 1, column);
 		}
 	}
+
+	return out;
 }
 
 bool Match::canMove() const {
