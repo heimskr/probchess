@@ -11,6 +11,7 @@
 #include "ChessError.h"
 #include "HumanMatch.h"
 #include "HumanPlayer.h"
+#include "NullMatch.h"
 #include "RandomPlayer.h"
 #include "Square.h"
 #include "StockfishPlayer.h"
@@ -268,6 +269,8 @@ void createMatch(Connection hdl, const std::string &id, int column_count, Color 
 		match = AIMatch::create<CCCPPlayer>(id, hidden, noskip, column_count, color);
 	} else if (type == "stockfish") {
 		match = AIMatch::create<StockfishPlayer>(id, hidden, noskip, column_count, color);
+	} else if (type == "null") {
+		match = std::make_shared<NullMatch>(id, hidden, noskip, column_count, color);
 	} else {
 		send(hdl, ":Error Invalid match type.");
 		return;
