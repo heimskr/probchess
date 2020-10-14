@@ -165,6 +165,10 @@ function connect() {
 			return;
 		}
 
+		if (verb == "Promote") {
+			return;
+		}
+
 		console.warn("Unknown verb:", verb);
 	};
 

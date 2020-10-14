@@ -173,6 +173,7 @@ void Match::checkPawns() {
 		std::shared_ptr<Piece> piece = board.at(0, column);
 		if (piece && piece->getType() == Piece::Type::Pawn && piece->color == Color::White) {
 			board.erase(piece);
+			sendAll(":Promote " + std::string(piece->square));
 			board.set<Queen>(Color::White, 0, column);
 		}
 	}
@@ -181,6 +182,7 @@ void Match::checkPawns() {
 		std::shared_ptr<Piece> piece = board.at(board.height - 1, column);
 		if (piece && piece->getType() == Piece::Type::Pawn && piece->color == Color::Black) {
 			board.erase(piece);
+			sendAll(":Promote " + std::string(piece->square));
 			board.set<Queen>(Color::Black, board.height - 1, column);
 		}
 	}
