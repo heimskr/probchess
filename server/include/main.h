@@ -24,5 +24,6 @@ void sigchld_handler(int);
 void createMatch(Connection, const std::string &id, int column_count, Color, bool hidden, bool noskip,
                  const std::string &type);
 void joinMatch(Connection, const std::string &id, bool as_spectator);
+void leaveMatch(Connection);
 
 #endif

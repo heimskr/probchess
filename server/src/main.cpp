@@ -235,6 +235,11 @@ void echo_handler(Connection hdl, asio_server::message_ptr msg_ptr) {
 		return;
 	}
 
+	if (verb == "LeaveMatch") { // :LeaveMatch
+		leaveMatch(hdl);
+		return;
+	}
+
 	send(hdl, ":Error Unknown message type");
 }
 
@@ -370,4 +375,18 @@ void joinMatch(Connection hdl, const std::string &id, bool as_spectator) {
 		broadcast(":Match " + match->id + " " + (match->isReady()? "closed" : "open"));
 
 	std::cout << "Client joined match \e[32m" << id << "\e[39m as \e[1m" << as << "\e[22m.\n";
+}
+
+void leaveMatch(Connection hdl) {
+	std::shared_ptr<Match> match;
+	try {
+		match = matchesByConnection.at(hdl.lock().get());
+	} catch (std::out_of_range &) {
+		std::cerr << "Client not in a match attempted to leave a match.\n";
+		return;
+	}
+
+	std::cerr << "Disconnecting client from match \e[33m" << match->id << "\e[39m.\n";
+	match->disconnect(hdl);
+	matchesByConnection.erase(hdl.lock().get());
 }
