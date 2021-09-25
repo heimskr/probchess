@@ -86,6 +86,7 @@ Move CCCPPlayer::chooseMove(Match &match, const std::set<int> &columns) {
 		match.board.move(match.board.at(move.from), move.to);
 		labeled_move.isInCheck = match.board.isInCheck(other_color);
 		labeled_move.isCheckmated = match.board.isCheckmated(other_color);
+		labeled_move.isSelfInCheck = match.board.isInCheck(match.currentTurn);
 
 		match.board = old_board;
 		labeled_moves.push_back(labeled_move);

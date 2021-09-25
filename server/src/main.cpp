@@ -8,6 +8,7 @@
 #include "AIMatch.h"
 #include "Board.h"
 #include "CCCPPlayer.h"
+#include "CCCP2Player.h"
 #include "ChessError.h"
 #include "HumanMatch.h"
 #include "HumanPlayer.h"
@@ -272,6 +273,8 @@ void createMatch(Connection hdl, const std::string &id, int column_count, Color 
 		match = AIMatch::create<RandomPlayer>(id, hidden, noskip, column_count, color);
 	} else if (type == "cccp") {
 		match = AIMatch::create<CCCPPlayer>(id, hidden, noskip, column_count, color);
+	} else if (type == "cccp2") {
+		match = AIMatch::create<CCCP2Player>(id, hidden, noskip, column_count, color);
 	} else if (type == "stockfish") {
 		match = AIMatch::create<StockfishPlayer>(id, hidden, noskip, column_count, color);
 	} else if (type == "null") {

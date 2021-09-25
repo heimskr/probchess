@@ -1,11 +1,12 @@
-COMPILER	?= clang++
-DEBUGGER	?= lldb
-OUTPUT		:= chess
-SOURCES		:= $(shell find src/*.cpp src/**/*.cpp)
-OBJECTS		:= $(SOURCES:.cpp=.o)
-COREFLAGS	?= -g -O0 -Wall -Wextra
-CFLAGS		?= -Iinclude $(shell pkg-config --cflags boost openssl)
-LDFLAGS		?= $(shell pkg-config --libs boost openssl) -lpthread
+COMPILER     ?= clang++
+DEBUGGER     ?= lldb
+OUTPUT       := chess
+SOURCES      := $(shell find src/*.cpp src/**/*.cpp)
+OBJECTS      := $(SOURCES:.cpp=.o)
+COREFLAGS    ?= -g -O0 -Wall -Wextra
+CFLAGS       ?= -Iinclude $(shell pkg-config --cflags boost openssl)
+LDFLAGS      ?= $(shell pkg-config --libs boost openssl) -lpthread
+CLOC_OPTIONS := --exclude-dir=.vscode
 
 all: $(OUTPUT)
 
@@ -23,6 +24,12 @@ clean:
 
 dbg: $(OUTPUT)
 	$(DEBUGGER) $(OUTPUT) -- 38555
+
+count:
+	cloc . parser $(CLOC_OPTIONS)
+
+countbf:
+	cloc --by-file . parser $(CLOC_OPTIONS)
 
 DEPFILE  = .dep
 DEPTOKEN = "\# MAKEDEPENDS"
