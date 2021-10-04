@@ -190,3 +190,22 @@ label {
 	background: #600;
 	/* background: #b00; */
 }
+
+.hidden {
+	background: black;
+	color: transparent;
+}
+
+.hidden:not(:hover) .sep::after {
+	color: transparent;
+}
+
+.hidden:hover {
+	background: rgba(0, 0, 0, 0.2);
+	color: inherit;
+}
+
+.sep::after {
+	content: " / ";
+	color: gray;
+}

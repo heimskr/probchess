@@ -49,6 +49,31 @@ function renderJoin(j) {
 		<h4>Skipping</h4>
 		In the standard configuration, if the column chosen doesn't contain any moveable pieces, the player's turn is
 		skipped. With skipn't mode, rerolls will be made until a column with moveable pieces is chosen.
+		<h4>Probability</h4>
+		The probabilities are uneven due to the dice rolling mechanic. In order from column 1 to column 8, they are
+		<span class="hidden">
+			11.11%<span class="sep"></span>
+			11.11%<span class="sep"></span>
+			11.11%<span class="sep"></span>
+			11.11%<span class="sep"></span>
+			11.11%<span class="sep"></span>
+			13.89%<span class="sep"></span>
+			16.67%<span class="sep"></span>
+			13.89%
+		</span> (hover to view).
+		Equivalently, the chances out of 36 are
+		<span class="hidden">
+			4<span class="sep"></span>
+			4<span class="sep"></span>
+			4<span class="sep"></span>
+			4<span class="sep"></span>
+			4<span class="sep"></span>
+			5<span class="sep"></span>
+			6<span class="sep"></span>
+			5
+		</span>.
+		Note that the columns are always chosen from white's perspective; if you're playing as black, the probabilities
+		will be in the reverse order.
 	`));
 
 	renderMatchTable($(`<table id="matches"></table>`).appendTo(j));
