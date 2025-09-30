@@ -1,6 +1,6 @@
 # Probability Chess
 
-A hastily hacked-together implementation of probability chess. Demo [here](http://heimskr.gay/chess).
+A hastily hacked-together implementation of probability chess. Demo [here](https://game3.party/chess).
 
 [Algiz](https://github.com/heimskr/algiz) contains a port of the server as a plugin.
 
