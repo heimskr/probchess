@@ -1,8 +1,10 @@
 # Probability Chess
 
-A hastily hacked-together implementation of probability chess. Demo [here](https://game3.party/chess).
+A hastily hacked-together implementation of probability chess.
 
 [Algiz](https://github.com/heimskr/algiz) contains a port of the server as a plugin.
+
+There is a more modern version (unfortunately not open source due to factors beyond my control) at [probchess.fun](https://probchess.fun).
 
 ## Rules
 
